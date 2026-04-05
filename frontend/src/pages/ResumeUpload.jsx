@@ -1,0 +1,68 @@
+import { useState } from "react";
+import { uploadResume } from "../services/api";
+
+const ResumeUpload = () => {
+  const [file, setFile] = useState(null);
+  const [text, setText] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const handleFileChange = (e) => {
+    setFile(e.target.files[0]);
+  };
+
+  const handleUpload = async () => {
+    if (!file) {
+      alert("Please select a file");
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("resume", file);
+
+    try {
+      setLoading(true);
+      const res = await uploadResume(formData);
+
+      setText(res.data.text);
+    } catch (err) {
+      console.error(err);
+      alert("Upload failed");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-6">
+      <div className="bg-white p-6 rounded-lg shadow w-full max-w-xl space-y-4">
+
+        <h2 className="text-2xl font-bold text-gray-800">
+          Upload Resume
+        </h2>
+
+        <input
+          type="file"
+          onChange={handleFileChange}
+          className="w-full border p-2 rounded"
+        />
+
+        <button
+          onClick={handleUpload}
+          className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition"
+        >
+          {loading ? "Uploading..." : "Upload Resume"}
+        </button>
+
+        {text && (
+          <div className="mt-4 p-3 border rounded bg-gray-100 max-h-60 overflow-y-auto">
+            <h3 className="font-semibold mb-2">Extracted Text:</h3>
+            <p className="text-sm whitespace-pre-line">{text}</p>
+          </div>
+        )}
+
+      </div>
+    </div>
+  );
+};
+
+export default ResumeUpload;
