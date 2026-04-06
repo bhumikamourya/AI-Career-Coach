@@ -5,6 +5,7 @@ const ResumeUpload = () => {
   const [file, setFile] = useState(null);
   const [text, setText] = useState("");
   const [loading, setLoading] = useState(false);
+  const [extractedSkills, setExtractedSkills] = useState([]);
 
   const handleFileChange = (e) => {
     setFile(e.target.files[0]);
@@ -24,6 +25,7 @@ const ResumeUpload = () => {
       const res = await uploadResume(formData);
 
       setText(res.data.text);
+      setExtractedSkills(res.data.extractedSkills);
     } catch (err) {
       console.error(err);
       alert("Upload failed");
@@ -59,6 +61,17 @@ const ResumeUpload = () => {
             <p className="text-sm whitespace-pre-line">{text}</p>
           </div>
         )}
+
+        {extractedSkills.length > 0 && (
+  <div className="mt-4 p-3 border rounded bg-green-50">
+    <h3 className="font-semibold mb-2 text-green-700">
+      Detected Skills:
+    </h3>
+    <p className="text-sm">
+      {extractedSkills.join(", ")}
+    </p>
+  </div>
+)}
 
       </div>
     </div>

@@ -24,7 +24,19 @@ exports.updateProfile = async (req, res) => {
 
     //  handle skills safely
     if (skills && Array.isArray(skills)) {
-      updateData.skills = skills.map((skill) => skill.trim());
+      updateData.skills = skills.map((skill) => {
+        if (typeof skill === "string") {
+          return {
+            name: skill.trim(),
+            level: "Beginner"
+          };
+        }
+
+        return {
+          name: skill.name.trim(),
+          level: skill.level || "Beginner"
+        };
+      });
     }
 
     const user = await User.findByIdAndUpdate(

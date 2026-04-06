@@ -1,27 +1,29 @@
 const roleSkills = {
   "Frontend Developer": [
-    "HTML",
-    "CSS",
-    "JavaScript",
-    "React",
-    "Git"
+    { name: "HTML", level: "Advanced" },
+    { name: "CSS", level: "Advanced" },
+    { name: "JavaScript", level: "Advanced" },
+    { name: "React", level: "Intermediate" },
+    { name: "Git", level: "Intermediate" }
   ],
+
   "Backend Developer": [
-    "Node.js",
-    "Express",
-    "MongoDB",
-    "API",
-    "Git"
+    { name: "Node.js", level: "Advanced" },
+    { name: "Express", level: "Intermediate" },
+    { name: "MongoDB", level: "Intermediate" },
+    { name: "API", level: "Advanced" },
+    { name: "Git", level: "Intermediate" }
   ],
+
   "Full Stack Developer": [
-    "HTML",
-    "CSS",
-    "JavaScript",
-    "React",
-    "Node.js",
-    "Express",
-    "MongoDB",
-    "Git"
+    { name: "HTML", level: "Advanced" },
+    { name: "CSS", level: "Advanced" },
+    { name: "JavaScript", level: "Advanced" },
+    { name: "React", level: "Intermediate" },
+    { name: "Node.js", level: "Intermediate" },
+    { name: "Express", level: "Intermediate" },
+    { name: "MongoDB", level: "Intermediate" },
+    { name: "Git", level: "Intermediate" }
   ]
 };
 

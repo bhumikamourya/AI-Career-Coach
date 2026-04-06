@@ -34,7 +34,9 @@ const Dashboard = () => {
 
       setForm({
         targetRole: res.data.targetRole || "",
-        skills: res.data.skills?.join(", ") || ""
+        skills: (res.data.skills || [])
+          ?.map((s) => s.name)
+          .join(", ") || ""
       });
     } catch (err) {
       console.error(err);
@@ -52,6 +54,11 @@ const Dashboard = () => {
         skills: form.skills
           .split(",")
           .map((s) => s.trim())
+          .filter((s) => s !== "")
+          .map((s) => ({
+            name: s,
+            level: "Beginner"
+          }))
           .filter((s) => s !== "")
       };
 
@@ -80,7 +87,7 @@ const Dashboard = () => {
     try {
       setLoadingRoadmap(true);
       const res = await getRoadmap();
-      setRoadmap(res.data.roadmap);
+      setRoadmap(res.data);
     } catch (err) {
       console.error(err);
     } finally {
@@ -148,18 +155,18 @@ const Dashboard = () => {
           </button>
 
           <button
-          onClick={() => navigate("/resume")}
-          className="bg-indigo-500 text-white px-4 py-2 mx-4 rounded-lg"
-        >
-          Upload Resume
-        </button>
+            onClick={() => navigate("/resume")}
+            className="bg-indigo-500 text-white px-4 py-2 mx-4 rounded-lg"
+          >
+            Upload Resume
+          </button>
 
-        <button
-  onClick={() => (window.location.href = "/resume-builder")}
-  className="bg-green-600 text-white px-4 py-2 rounded"
->
-  Resume Builder
-</button>
+          <button
+            onClick={() => (window.location.href = "/resume-builder")}
+            className="bg-green-600 text-white px-4 py-2 rounded"
+          >
+            Resume Builder
+          </button>
         </div>
 
         {/* ACTION BUTTONS */}
@@ -180,27 +187,38 @@ const Dashboard = () => {
         </div>
 
         {/* SKILL GAP RESULT */}
+        {/* <pre>{JSON.stringify(analysis, null, 2)}</pre> */}
+
         {analysis && (
           <div className="bg-white p-5 rounded-lg shadow">
             <h3 className="text-lg font-semibold mb-2">Skill Gap Analysis</h3>
 
-            <p><span className="font-semibold">Matched:</span> {analysis?.matchedSkills?.join(", ") || "None"}</p>
             <p><span className="font-semibold">Missing:</span> {analysis?.missingSkills?.join(", ") || "None"}</p>
-            <p><span className="font-semibold">Weak:</span> {analysis?.weakSkills?.join(", ") || "None"}</p>
+            <p><span className="font-semibold">Needs Improvement:</span> {analysis?.weakSkills?.join(", ") || "None"}</p>
+            <p><span className="font-semibold">Strong Skills:</span> {analysis?.matchedSkills?.join(", ") || "None"}</p>
+
           </div>
         )}
 
         {/* ROADMAP RESULT */}
-        {roadmap && (
+        {/* <pre>{JSON.stringify(roadmap, null, 2)}</pre> */}
+        {roadmap?.roadmap?.length > 0 && (
           <div className="bg-white p-5 rounded-lg shadow">
             <h3 className="text-lg font-semibold mb-2">Learning Roadmap</h3>
 
-            {roadmap.map((item, index) => (
+            <p className="text-lg font-semibold text-purple-700 mb-3">
+              Total Time: {roadmap.totalEstimatedDays} days
+            </p>
+
+            {roadmap.roadmap.map((item, index) => (
               <div key={index} className="border-l-4 border-blue-500 pl-3 mb-2">
                 <p>
                   <span className="font-semibold">{item.topic}</span> ({item.level})
                 </p>
                 <p className="text-sm text-gray-600">{item.status}</p>
+                <p className="text-sm">
+                  Priority: <span className="font-semibold">{item.priority}</span>
+                </p>
               </div>
             ))}
           </div>

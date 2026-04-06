@@ -12,16 +12,25 @@ const userSchema = new mongoose.Schema(
       unique: true
     },
     password: {
-      type: String, 
+      type: String,
       required: true
     },
-    skills: {
-      type: [String],
-      default: []
-    },
+    skills: [
+      {
+        name: {
+          type: String,
+          required: true
+        },
+        level: {
+          type: String,
+          enum: ["Beginner", "Intermediate", "Advanced"],
+          default: "Beginner"
+        }
+      }
+    ],
     targetRole: {
       type: String,
-      default: "" ,
+      default: "",
       enum: ["Frontend Developer", "Backend Developer", "Full Stack Developer"]
     }
   },

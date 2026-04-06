@@ -10,12 +10,11 @@ exports.getRoadmap = async (req, res) => {
 
     const roadmap = generateRoadmap(
       user.targetRole,
-      gap.missingSkills
+      gap.missingSkills,
+      gap.weakSkills
     );
 
-    res.json({
-      roadmap
-    });
+    res.json(roadmap);
 
   } catch (err) {
     res.status(500).json({ message: err.message });

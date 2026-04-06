@@ -22,7 +22,10 @@ const Register = () => {
 
     const payload = {
       ...form,
-      skills: form.skills.split(",").map((s) => s.trim())
+      skills: form.skills.split(",").map((s) => ({
+        name: s.trim(),
+        level: "Beginner"
+      }))
     };
 
     try {
@@ -63,12 +66,16 @@ const Register = () => {
             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             required
           />
-          <input
+          <select
             name="targetRole"
             placeholder="Target Role (Frontend / Backend / Full Stack)"
             onChange={handleChange}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <option value="">Select Role</option>
+            <option value="Frontend Developer">Frontend Developer</option>
+            <option value="Backend Developer">Backend Developer</option>
+            <option value="Full Stack Developer">Full Stack Developer</option>
+          </select>
           <input
             name="skills"
             placeholder="Skills (comma separated)"

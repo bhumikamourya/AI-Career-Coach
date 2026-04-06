@@ -1,9 +1,12 @@
 const roleSkills = require("../utils/roleSkills");
 
-const normalize = (arr) => arr.map(s => s.toLowerCase().trim());
+const levelMap = {
+  Beginner: 1,
+  Intermediate: 2,
+  Advanced: 3
+};
 
 exports.getSkillGap = (userSkills, targetRole) => {
-  // fallback safety
   if (!userSkills || !targetRole) {
     return {
       requiredSkills: [],
@@ -13,29 +16,31 @@ exports.getSkillGap = (userSkills, targetRole) => {
     };
   }
 
-  const requiredSkills = roleSkills[targetRole] || [];
+  const required = roleSkills[targetRole] || [];
 
-  const normalizedUser = normalize(userSkills);
-  const normalizedRequired = normalize(requiredSkills);
+  const userMap = {};
+  userSkills.forEach((s) => {
+    userMap[s.name.toLowerCase()] = levelMap[s.level];
+  });
 
-  const matched = [];
   const missing = [];
+  const weak = [];
+  const matched = [];
 
-  normalizedRequired.forEach((skill, index) => {
-    if (normalizedUser.includes(skill)) {
-      matched.push(requiredSkills[index]);
+  required.forEach((skill) => {
+    const userLevel = userMap[skill.name.toLowerCase()];
+
+    if (!userLevel) {
+      missing.push(skill.name);
+    } else if (userLevel < levelMap[skill.level]) {
+      weak.push(skill.name);
     } else {
-      missing.push(requiredSkills[index]);
+      matched.push(skill.name);
     }
   });
 
-  // simple weak logic (can improve later)
-  const weak = matched.filter(skill =>
-    ["html", "css", "git"].includes(skill.toLowerCase())
-  );
-
   return {
-    requiredSkills,
+    requiredSkills: required.map((s) => s.name),
     matchedSkills: matched,
     missingSkills: missing,
     weakSkills: weak
