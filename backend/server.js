@@ -20,6 +20,7 @@ app.use("/api/skill-gap", require("./routes/skillGapRoutes"));
 app.use("/api/roadmap", require("./routes/roadmapRoutes"));
 app.use ("/api/resume", require("./routes/resumeRoutes"));
 app.use("/api/resume-builder", require("./routes/resumeBuilderRoutes"));
+app.use("/api/practice", require("./routes/practiceRoutes"));
 
 // test
 app.get("/", (req, res) => {

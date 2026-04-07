@@ -29,3 +29,6 @@ export const uploadResume = (formData) =>
   });
   export const saveResume = (data) => API.post("/resume-builder", data);
 export const getResume = () => API.get("/resume-builder");
+
+export const getQuestions = () => API.get("/practice");
+export const submitAnswers = (data) => API.post("/practice/submit", data);
