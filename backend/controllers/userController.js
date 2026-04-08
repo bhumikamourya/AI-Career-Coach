@@ -55,3 +55,22 @@ exports.updateProfile = async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 };
+
+exports.deleteSkill = async (req, res) => {
+  try {
+    const { name } = req.body;
+
+    const user = await User.findById(req.user.id);
+
+    user.skills = user.skills.filter(
+      (s) => s.name.toLowerCase() !== name.toLowerCase()
+    );
+
+    await user.save();
+
+    res.json(user);
+
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};

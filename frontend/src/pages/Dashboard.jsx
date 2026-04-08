@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { getProfile, updateProfile, getSkillGap, getRoadmap } from "../services/api";
 import { useNavigate } from "react-router-dom";
+import { markProgress } from "../services/api";
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -18,13 +19,7 @@ const Dashboard = () => {
   const [loadingRoadmap, setLoadingRoadmap] = useState(false);
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
-
-    if (!token) {
-      navigate("/login");
-    } else {
-      fetchProfile();
-    }
+    fetchProfile();
   }, []);
 
   const fetchProfile = async () => {
@@ -83,6 +78,16 @@ const Dashboard = () => {
     }
   };
 
+  const total = (user?.progress?.length || 0) * 2;
+
+  const completed = user?.progress?.reduce((acc, p) => {
+    return acc +
+      (p.theoryDone ? 1 : 0) +
+      (p.practiceDone ? 1 : 0);
+  }, 0);
+
+  const percent = total === 0 ? 0 : ((completed / total) * 100).toFixed(0);
+
   const handleRoadmap = async () => {
     try {
       setLoadingRoadmap(true);
@@ -92,6 +97,51 @@ const Dashboard = () => {
       console.error(err);
     } finally {
       setLoadingRoadmap(false);
+    }
+  };
+
+  const handleDeleteSkill = async (name) => {
+    try {
+      await fetch("http://localhost:5000/api/user/skill", {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`
+        },
+        body: JSON.stringify({ name })
+      });
+
+      fetchProfile();
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleStartPractice = () => {
+    const total = user.progress.length * 2;
+
+    const completed = user.progress.reduce((acc, p) => {
+      return acc + (p.theoryDone ? 1 : 0) + (p.practiceDone ? 1 : 0);
+    }, 0);
+
+    const percentage = total === 0 ? 0 : (completed / total) * 100;
+    if (percentage < 70) {
+      alert(`Complete at least 70% roadmap. Current: ${percentage.toFixed(0)}%`);
+      return;
+    }
+    navigate("/practice");
+  };
+
+  const markComplete = async (topic, type) => {
+    try {
+      await markProgress({ topic, type });
+      fetchProfile();
+
+      const res = await getRoadmap();
+      setRoadmap(res.data);
+
+    } catch (err) {
+      console.error(err);
     }
   };
 
@@ -106,8 +156,9 @@ const Dashboard = () => {
 
         {/* HEADER */}
         <div className="flex justify-between items-center">
-          <h2 className="text-3xl font-bold text-gray-800">Dashboard</h2>
-          <button
+          <h2 className="text-3xl font-bold text-gray-800">
+            Career Progress Dashboard
+          </h2>          <button
             onClick={logout}
             className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition"
           >
@@ -117,15 +168,63 @@ const Dashboard = () => {
 
         {/* USER INFO */}
         {user && (
-          <div className="bg-white p-5 rounded-lg shadow">
-            <p><span className="font-semibold">Name:</span> {user.name}</p>
-            <p><span className="font-semibold">Email:</span> {user.email}</p>
+          <div className="bg-white p-5 rounded-lg shadow space-y-2">
+            <p><span className="font-semibold">Full Name:</span> {user.name}</p>
+            <p><span className="font-semibold">Email Address:</span> {user.email}</p>
+
+            <p className="font-semibold mt-3">Your Current Skills</p>
+
+            <div className="flex flex-wrap gap-2">
+              {user.skills?.length > 0 ? (
+                user.skills.map((skill, i) => (
+                  <span
+                    key={i}
+                    className={`px-3 py-1 rounded-full text-sm 
+              ${skill.level === "Beginner"
+                        ? "bg-red-200"
+                        : skill.level === "Intermediate"
+                          ? "bg-yellow-200"
+                          : "bg-green-200"
+                      }`}
+                  >
+                    {skill.name} ({skill.level})
+                    <button
+                      onClick={() => handleDeleteSkill(skill.name)}
+                      className="ml-2 text-red-500"
+                    >
+                      ✕
+                    </button>
+                  </span>
+
+                ))
+              ) : (
+                <p className="text-gray-500">No skills added yet</p>)}
+            </div>
+
+
+            <p className="font-semibold mt-4">
+              System Evaluation (AI Analysis)
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {user.evaluatedSkills?.length > 0 ? (
+                user.evaluatedSkills.map((skill, i) => (
+                  <span
+                    key={i}
+                    className="px-3 py-1 rounded-full text-sm bg-blue-200"
+                  >
+                    {skill.name} ({skill.level})
+                  </span>
+                ))
+              ) : (
+                <p>No evaluation yet</p>
+              )}
+            </div>
           </div>
         )}
 
         {/* PROFILE UPDATE */}
         <div className="bg-white p-5 rounded-lg shadow space-y-4">
-          <h3 className="text-xl font-semibold">Update Profile</h3>
+          <h3 className="text-xl font-semibold">Update Career Preferences</h3>
 
           <select
             name="targetRole"
@@ -143,29 +242,28 @@ const Dashboard = () => {
             name="skills"
             value={form.skills}
             onChange={handleChange}
-            placeholder="Skills (comma separated e.g. HTML, CSS, JS)"
-            className="w-full p-2 border rounded-lg"
+            placeholder="Enter skills separated by commas (e.g. HTML, CSS, JavaScript)" className="w-full p-2 border rounded-lg"
           />
 
           <button
             onClick={handleUpdate}
             className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition"
           >
-            Update Profile
+            Save Changes
           </button>
 
           <button
             onClick={() => navigate("/resume")}
             className="bg-indigo-500 text-white px-4 py-2 mx-4 rounded-lg"
           >
-            Upload Resume
+            Upload Resume (PDF)
           </button>
 
           <button
             onClick={() => (window.location.href = "/resume-builder")}
             className="bg-green-600 text-white px-4 py-2 rounded"
           >
-            Resume Builder
+            Create Resume
           </button>
         </div>
 
@@ -175,14 +273,14 @@ const Dashboard = () => {
             onClick={handleSkillGap}
             className="flex-1 bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition"
           >
-            {loadingGap ? "Analyzing..." : "Analyze Skill Gap"}
+            {loadingGap ? "Analyzing..." : "Analyze Skill Gaps"}
           </button>
 
           <button
             onClick={handleRoadmap}
             className="flex-1 bg-purple-500 text-white px-4 py-2 rounded-lg hover:bg-purple-600 transition"
           >
-            {loadingRoadmap ? "Generating..." : "Generate Roadmap"}
+            {loadingRoadmap ? "Generating..." : "Generate Learning Roadmap"}
           </button>
         </div>
 
@@ -204,25 +302,146 @@ const Dashboard = () => {
         {/* <pre>{JSON.stringify(roadmap, null, 2)}</pre> */}
         {roadmap?.roadmap?.length > 0 && (
           <div className="bg-white p-5 rounded-lg shadow">
-            <h3 className="text-lg font-semibold mb-2">Learning Roadmap</h3>
+            <h3 className="text-lg font-semibold mb-2">
+              Personalized Learning Roadmap
+            </h3>
+            <p className="font-semibold mt-3">Overall Progress</p>
+
+            <p className="text-sm text-gray-600 mb-2">
+              Complete both theory and practice for each topic to unlock interview readiness.
+            </p>
+
+            <p>
+              {user.progress?.filter((p) => p.theoryDone && p.practiceDone).length} / {user.progress?.length} topics fully completed
+            </p>
 
             <p className="text-lg font-semibold text-purple-700 mb-3">
               Total Time: {roadmap.totalEstimatedDays} days
             </p>
+            <p className="text-sm text-gray-600 mb-2">
+              Each topic includes an estimated completion time to help you stay consistent and track your learning pace.
+            </p>
 
-            {roadmap.roadmap.map((item, index) => (
-              <div key={index} className="border-l-4 border-blue-500 pl-3 mb-2">
-                <p>
-                  <span className="font-semibold">{item.topic}</span> ({item.level})
-                </p>
-                <p className="text-sm text-gray-600">{item.status}</p>
-                <p className="text-sm">
-                  Priority: <span className="font-semibold">{item.priority}</span>
-                </p>
-              </div>
-            ))}
+
+            <p className="font-semibold mt-3">Learning Progress</p>
+
+            <div className="w-full bg-gray-200 rounded h-3">
+              <div
+                className="bg-green-500 h-3 rounded"
+                style={{ width: `${percent}%` }}
+              ></div>
+            </div>
+
+            <p className="text-sm text-gray-700 mt-1">
+              {percent}% of your learning journey completed
+            </p>
+
+            <p className="text-sm text-gray-600 mb-2">
+              Skill Level shows topic difficulty. Priority is based on your current skill gaps.
+            </p>
+
+            {roadmap.roadmap.map((item, index) => {
+              const progressItem = user.progress?.find(
+                (p) => p.topic === item.topic
+              );
+
+              const isTheoryDone = progressItem?.theoryDone;
+              const isPracticeDone = progressItem?.practiceDone;
+              return (
+                <div key={index} className="border p-3 mb-3 rounded">
+
+                  <div className="flex justify-between items-center">
+                    <p className="font-semibold text-lg">
+                      {item.topic}
+                      <span className="text-sm text-gray-500 ml-2">Skill Level: ({item.level})</span>
+                    </p>
+
+                    <div className="mt-1">
+                      <span
+                        className={`text-xs px-2 py-1 rounded 
+    ${item.priority === "High" ? "bg-red-200 text-red-800" :
+                            item.priority === "Medium" ? "bg-yellow-200 text-yellow-800" :
+                              "bg-green-200 text-green-800"}`}
+                      >
+                        Your Priority: {item.priority}
+                      </span>
+                    </div>
+
+                    <div className="text-right">
+                      <p className="text-sm bg-gray-200 px-2 py-1 rounded">
+                        ⏱ {item.remainingDays} days left
+                      </p>
+                      <p className="text-xs text-gray-500">
+                        Total: {item.estimatedDays} days
+                      </p>
+                    </div>
+                  </div>
+
+                  <p className="mt-2 font-medium">
+                    Status:{" "}
+                    <span
+                      className={`${isTheoryDone && isPracticeDone
+                        ? "text-green-600"
+                        : isTheoryDone || isPracticeDone
+                          ? "text-yellow-600"
+                          : "text-gray-500"
+                        }`}
+                    >
+                      {isTheoryDone && isPracticeDone
+                        ? "Completed"
+                        : isTheoryDone || isPracticeDone
+                          ? "In Progress"
+                          : "Not Started"}
+                    </span>
+                  </p>
+                  {/* RESOURCES */}
+                  <div className="mt-3 space-y-1">
+                    {item.resources?.map((res, i) => (
+                      <a
+                        key={i}
+                        href={res.link}
+                        target="_blank"
+                        className="block text-blue-600 hover:underline text-sm"
+                      >
+                        📘 {res.title}
+                      </a>
+                    ))}
+                  </div>
+
+                  <div className="flex gap-2 mt-2">
+
+                    {!isTheoryDone && (
+                      <button
+                        onClick={() => markComplete(item.topic, "theory")}
+                        className="bg-blue-500 text-white px-3 py-1 rounded"
+                      >
+                        Mark Theory Complete
+                      </button>
+                    )}
+
+                    {!isPracticeDone && (
+                      <button
+                        onClick={() => markComplete(item.topic, "practice")}
+                        className="bg-green-500 text-white px-3 py-1 rounded"
+                      >
+                        Mark Practice Complete
+                      </button>
+                    )}
+
+                  </div>
+
+                </div>
+              );
+            })}
           </div>
         )}
+
+        <button
+          onClick={handleStartPractice}
+          className="flex-1 bg-orange-500 text-white px-4 py-2 rounded-lg"
+        >
+          Start Interview Practice
+        </button>
 
       </div>
     </div>

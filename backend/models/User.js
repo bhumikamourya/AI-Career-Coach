@@ -28,6 +28,25 @@ const userSchema = new mongoose.Schema(
         }
       }
     ],
+    evaluatedSkills: [
+      {
+        name: String,
+        level: String, // system calculated
+      }
+    ],
+    progress: [
+  {
+    topic: String,
+    theoryDone: {
+      type: Boolean,
+      default: false
+    },
+    practiceDone: {
+      type: Boolean,
+      default: false
+    }
+  }
+],
     targetRole: {
       type: String,
       default: "",

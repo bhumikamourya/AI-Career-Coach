@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { getQuestions, submitAnswers } from "../services/api";
+import { useNavigate } from "react-router-dom";
 
 const Practice = () => {
   const [questions, setQuestions] = useState([]);
@@ -7,6 +8,9 @@ const Practice = () => {
   const [selectedAnswers, setSelectedAnswers] = useState({});
   const [result, setResult] = useState(null);
   const [submitting, setSubmitting] = useState(false); //  NEW
+  const [blocked, setBlocked] = useState(null);
+
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetchQuestions();
@@ -17,13 +21,17 @@ const Practice = () => {
       const res = await getQuestions();
       setQuestions(res.data);
     } catch (err) {
-      console.error(err);
+      if (err.response?.status === 403) {
+        setBlocked(err.response.data);
+      } else {
+        console.error(err);
+      }
     }
   };
 
   const current = questions[index];
 
-  // ✅ STORE ANSWER
+  // STORE ANSWER
   const handleOptionClick = (questionId, option) => {
     setSelectedAnswers((prev) => ({
       ...prev,
@@ -43,10 +51,10 @@ const Practice = () => {
     if (submitting) return; //  prevent double click
 
     //  force complete test
-  if (Object.keys(selectedAnswers).length < questions.length) {
-    alert("Please answer all questions");
-    return;
-  }
+    if (Object.keys(selectedAnswers).length < questions.length) {
+      alert("Please answer all questions");
+      return;
+    }
 
     try {
       setSubmitting(true);
@@ -63,83 +71,155 @@ const Practice = () => {
 
     } catch (err) {
       console.error(err);
-       alert("Submission failed");
+      alert("Submission failed");
     } finally {
       setSubmitting(false);
     }
   };
 
+   if (blocked) {
+    return (
+      <div className="p-6 max-w-xl mx-auto text-center">
+        <h2 className="text-2xl font-bold text-red-600 mb-4">
+          Access Restricted
+        </h2>
+
+        <p className="mb-2">{blocked.message}</p>
+
+        <p className="mb-4">
+          Current Progress: <strong>{blocked.progress}%</strong>
+        </p>
+
+        <button
+          onClick={() => navigate("/")}
+          className="bg-blue-500 text-white px-4 py-2 rounded"
+        >
+          Go Back to Dashboard
+        </button>
+      </div>
+    );
+  }
+
   // RESULT SCREEN
- if (result) {
-  const weakTopics = Object.entries(result.topicStats || {})
-    .filter(([_, data]) => data.correct / data.total < 0.5)
-    .map(([topic]) => topic);
+  if (result) {
+    return (
+      <div className="p-6 max-w-4xl mx-auto">
 
-  return (
-    <div className="p-6 max-w-3xl mx-auto">
+        <button
+          onClick={() => navigate("/")}
+          className="mb-4 bg-gray-500 text-white px-4 py-2 rounded"
+        >
+          ← Back to Dashboard
+        </button>
 
-      <h2 className="text-2xl font-bold mb-4">Test Result</h2>
+        <h2 className="text-2xl font-bold mb-4">Test Result</h2>
 
-      {/* SUMMARY */}
-      <div className="bg-white p-4 rounded shadow mb-4">
-        <p>Total Questions: {result.total}</p>
-        <p>
-          Correct: <span className="text-green-600">{result.correct}</span>
-        </p>
-        <p>
-          Wrong: <span className="text-red-600">{result.wrong}</span>
-        </p>
-        <p>Score: {result.percentage}%</p>
-      </div>
+        <button
+          onClick={() => navigate("/")}
+          className="mt-4 ml-3 bg-green-600 text-white px-4 py-2 rounded"
+        >
+          Go to Dashboard (See Skill Update)
+        </button>
 
-      {/* WEAK AREAS */}
-      <div className="bg-red-100 p-4 rounded mb-4">
-        <h3 className="font-semibold">Needs Improvement</h3>
-        <p>{weakTopics.length ? weakTopics.join(", ") : "None"}</p>
-      </div>
-
-      {/* TOPIC ANALYSIS */}
-      <div className="bg-white p-4 rounded shadow mb-4">
-        <h3 className="font-semibold mb-2">Topic Analysis</h3>
-
-        {Object.entries(result.topicStats || {}).map(([topic, data]) => (
-          <div key={topic}>
-            <p>
-              {topic}: {data.correct}/{data.total}
-            </p>
-          </div>
-        ))}
-      </div>
-
-      {/* QUESTIONS */}
-      {result.answers.map((item, i) => (
-        <div key={i} className="border p-3 mb-3 rounded">
-          <p className="font-semibold">{item.question}</p>
-
+        {/* SUMMARY */}
+        <div className="bg-white p-4 rounded shadow mb-4">
+          <p>Total Questions: {result.total}</p>
           <p>
-            Your Answer:{" "}
-            <span className={item.isCorrect ? "text-green-600" : "text-red-600"}>
-              {item.selected}
-            </span>
+            Correct: <span className="text-green-600">{result.correct}</span>
           </p>
+          <p>
+            Wrong: <span className="text-red-600">{result.wrong}</span>
+          </p>
+          <p>Score: {result.percentage}%</p>
+        </div>
 
-          {!item.isCorrect && (
-            <p className="text-green-600">
-              Correct Answer: {item.correct}
+        {/* 🔥 UPDATED SKILLS */}
+        <div className="bg-blue-100 p-4 rounded mb-4">
+          <h3 className="font-semibold mb-2">System Evaluation</h3>
+
+          {result.evaluatedSkills?.length ? (
+            <p>
+              {result.evaluatedSkills.map(
+                (s) => `${s.name} (${s.level})`
+              ).join(", ")}
             </p>
+          ) : (
+            <p>No skills Evaluated</p>
           )}
         </div>
-      ))}
 
-      <button
-        onClick={() => window.location.reload()}
-        className="mt-4 bg-blue-500 text-white px-4 py-2 rounded"
-      >
-        Retry
-      </button>
-    </div>
-  );
-}
+        {/* 🔥 WEAK AREAS FROM GAP */}
+        <div className="bg-red-100 p-4 rounded mb-4">
+          <h3 className="font-semibold">Needs Improvement</h3>
+
+          <p>
+            {result.updatedGap?.weakSkills?.length
+              ? result.updatedGap.weakSkills.join(", ")
+              : "None"}
+          </p>
+        </div>
+
+        {/* 🔥 TOPIC ANALYSIS */}
+        <div className="bg-white p-4 rounded shadow mb-4">
+          <h3 className="font-semibold mb-2">Topic Analysis</h3>
+
+          {Object.entries(result.topicStats || {}).map(([topic, data]) => (
+            <div key={topic}>
+              <p>
+                {topic}: {data.correct}/{data.total}
+              </p>
+            </div>
+          ))}
+        </div>
+
+        {/* 🔥 UPDATED ROADMAP */}
+        <div className="bg-purple-100 p-4 rounded mb-4">
+          <h3 className="font-semibold mb-2">Updated Roadmap</h3>
+
+          {result.updatedRoadmap?.roadmap?.length ? (
+            result.updatedRoadmap.roadmap.slice(0, 5).map((item, i) => (
+              <p key={i}>
+                {item.topic} → {item.status} ({item.priority})
+              </p>
+            ))
+          ) : (
+            <p>No roadmap available</p>
+          )}
+        </div>
+
+        {/* ANSWER REVIEW */}
+        <div className="bg-white p-4 rounded shadow">
+          <h3 className="font-semibold mb-2">Answer Review</h3>
+
+          {result.answers.map((item, i) => (
+            <div key={i} className="border p-3 mb-3 rounded">
+              <p className="font-semibold">{item.question}</p>
+
+              <p>
+                Your Answer:{" "}
+                <span className={item.isCorrect ? "text-green-600" : "text-red-600"}>
+                  {item.selected}
+                </span>
+              </p>
+
+              {!item.isCorrect && (
+                <p className="text-green-600">
+                  Correct Answer: {item.correct}
+                </p>
+              )}
+            </div>
+          ))}
+        </div>
+
+        <button
+          onClick={() => window.location.reload()}
+          className="mt-4 bg-blue-500 text-white px-4 py-2 rounded"
+        >
+          Retry
+        </button>
+      </div>
+    );
+  }
 
   if (!current) return <p>Loading...</p>;
 
@@ -157,10 +237,9 @@ const Practice = () => {
             key={i}
             onClick={() => handleOptionClick(current._id, opt)}
             className={`block w-full text-left p-2 border rounded 
-              ${
-                selectedAnswers[current._id] === opt
-                  ? "bg-blue-200"
-                  : ""
+              ${selectedAnswers[current._id] === opt
+                ? "bg-blue-200"
+                : ""
               }`}
           >
             {opt}
@@ -168,14 +247,14 @@ const Practice = () => {
         ))}
       </div>
 
-        {/* PREVIOUS */}
-  <button
-    onClick={() => setIndex((prev) => prev - 1)}
-    disabled={index === 0}
-    className="bg-gray-400 text-white px-4 py-2 rounded disabled:opacity-50"
-  >
-    Previous
-  </button>
+      {/* PREVIOUS */}
+      <button
+        onClick={() => setIndex((prev) => prev - 1)}
+        disabled={index === 0}
+        className="bg-gray-400 text-white px-4 py-2 rounded disabled:opacity-50"
+      >
+        Previous
+      </button>
 
       {/* NEXT / SUBMIT */}
       {index < questions.length - 1 ? (

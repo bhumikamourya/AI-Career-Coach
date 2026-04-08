@@ -14,6 +14,43 @@ exports.getRoadmap = async (req, res) => {
       gap.weakSkills
     );
 
+
+    const newTopics = roadmap.roadmap.map((item) => item.topic);
+
+    // check if topics changed
+    const isDifferent =
+      !user.progress ||
+      user.progress.length !== newTopics.length ||
+      user.progress.some((p) => !newTopics.includes(p.topic));
+
+    if (isDifferent) {
+      user.progress = newTopics.map((topic) => ({
+        topic,
+        theoryDone: false,
+        practiceDone: false
+      }));
+      await user.save();
+    }
+
+    
+    roadmap.roadmap = roadmap.roadmap.map((item) => {
+      const progress = user.progress?.find(
+        (p) => p.topic === item.topic
+      );
+
+      let remainingDays = item.estimatedDays;
+
+      if (progress?.theoryDone) remainingDays -= 0.5;
+      if (progress?.practiceDone) remainingDays -= 0.5;
+
+      if (remainingDays < 0) remainingDays = 0;
+
+      return {
+        ...item,
+        remainingDays
+      };
+    });
+
     res.json(roadmap);
 
   } catch (err) {

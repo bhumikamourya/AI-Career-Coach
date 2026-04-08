@@ -1,37 +1,51 @@
 const roadmapData = require("../utils/roadmapData");
 
 exports.generateRoadmap = (targetRole, missingSkills, weakSkills = []) => {
-  const roadmap = roadmapData[targetRole] || [];
+  const baseRoadmap = roadmapData[targetRole] || [];
 
-  let totalDays = 0;
+  let totalEstimatedDays = 0;
 
-  const enhancedRoadmap = roadmap.map((item) => {
+  const roadmap = baseRoadmap.map((item) => {
     let status = "Revise";
     let priority = "Low";
-    let days = item.days || 2;
+
+    let estimatedDays = item.estimatedDays || 2;
+
+    let remainingDays = estimatedDays;
 
     if (missingSkills.includes(item.topic)) {
       status = "Start Learning";
       priority = "High";
-      days += 2;
+      estimatedDays += 2;
     } else if (weakSkills.includes(item.topic)) {
       status = "Improve";
       priority = "Medium";
-      days += 1;
+      estimatedDays += 1;
     }
 
-    totalDays += days;
+    totalEstimatedDays += estimatedDays;
 
     return {
       ...item,
-      priority,
       status,
-      days
+      priority,
+      estimatedDays,
+      remainingDays: estimatedDays,
+      resources: [
+        {
+          title: `${item.topic} Tutorial`,
+          link: "https://www.youtube.com/results?search_query=" + item.topic
+        },
+        {
+          title: `${item.topic} Practice`,
+          link: "https://www.google.com/search?q=" + item.topic + "+practice"
+        }
+      ]
     };
   });
 
   return {
-    totalEstimatedDays: totalDays,
-    roadmap: enhancedRoadmap
+    totalEstimatedDays,
+    roadmap
   };
 };

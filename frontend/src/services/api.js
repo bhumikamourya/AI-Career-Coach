@@ -32,3 +32,4 @@ export const getResume = () => API.get("/resume-builder");
 
 export const getQuestions = () => API.get("/practice");
 export const submitAnswers = (data) => API.post("/practice/submit", data);
+export const markProgress = (data) => API.post("/progress/complete", data);

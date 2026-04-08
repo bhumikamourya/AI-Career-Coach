@@ -1,6 +1,8 @@
 const Question = require("../models/Question");
 const Result = require("../models/Result");
 const User = require("../models/User");
+const { getSkillGap } = require("../services/skillGapService");
+const { generateRoadmap } = require("../services/roadmapService");
 
 //  GET QUESTIONS
 exports.getQuestions = async (req, res) => {
@@ -11,10 +13,23 @@ exports.getQuestions = async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
 
-    const role = user.targetRole; 
+    const role = user.targetRole;
 
     if (!role) {
       return res.status(400).json({ message: "Set target role first" });
+    }
+
+    // CHECK PROGRESS
+    const total = user.progress.length;
+
+const completed = user.progress.filter((p) => p.theoryDone && p.practiceDone).length;
+    const percentage = total === 0 ? 0 : (completed / total) * 100;
+
+    if (percentage < 70) {
+      return res.status(403).json({
+        message: "Complete at least 70% of roadmap before taking test",
+        progress: percentage.toFixed(0)
+      });
     }
 
     const questions = await Question.aggregate([
@@ -40,6 +55,10 @@ exports.submitAnswers = async (req, res) => {
     }
 
     const user = await User.findById(req.user.id);
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
 
     let correct = 0;
     let wrong = 0;
@@ -75,26 +94,54 @@ exports.submitAnswers = async (req, res) => {
       });
     }
 
-    // 🔥 AUTO SKILL UPDATE
     Object.entries(topicStats).forEach(([topic, data]) => {
       const accuracy = data.correct / data.total;
 
-      const skill = user.skills.find(
+      let level = "Beginner";
+      if (accuracy >= 0.7) level = "Advanced";
+      else if (accuracy >= 0.4) level = "Intermediate";
+
+      const existing = user.evaluatedSkills.find(
         (s) => s.name.toLowerCase() === topic.toLowerCase()
       );
 
-      if (skill) {
-        if (accuracy < 0.4) {
-          skill.level = "Beginner";
-        } else if (accuracy < 0.7) {
-          skill.level = "Intermediate";
-        } else {
-          skill.level = "Advanced";
-        }
+      if (existing) {
+        // update existing skill
+        existing.level = level;
+        existing.accuracy = accuracy; // optional upgrade
+      } else {
+        // add new evaluated skill
+        user.evaluatedSkills.push({
+          name: topic,
+          level,
+          accuracy
+        });
       }
     });
 
     await user.save();
+
+    const skillMap = new Map();
+
+    // user input skills
+    user.skills.forEach((s) => {
+      skillMap.set(s.name.toLowerCase(), s);
+    });
+
+    // evaluated skills override
+    user.evaluatedSkills.forEach((s) => {
+      skillMap.set(s.name.toLowerCase(), s);
+    });
+
+    const combinedSkills = Array.from(skillMap.values());
+
+    const updatedGap = getSkillGap(combinedSkills, user.targetRole);
+
+    const updatedRoadmap = generateRoadmap(
+      user.targetRole,
+      updatedGap.missingSkills,
+      updatedGap.weakSkills
+    );
 
     const percentage = ((correct / answers.length) * 100).toFixed(0);
 
@@ -114,7 +161,10 @@ exports.submitAnswers = async (req, res) => {
       wrong,
       percentage,
       topicStats,
-      answers: detailed
+      answers: detailed,
+      evaluatedSkills: user.evaluatedSkills,
+      updatedGap,
+      updatedRoadmap
     });
 
   } catch (err) {
