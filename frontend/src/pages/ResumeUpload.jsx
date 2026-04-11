@@ -1,11 +1,15 @@
 import { useState } from "react";
 import { uploadResume } from "../services/api";
+import { useNavigate } from "react-router-dom";
 
 const ResumeUpload = () => {
   const [file, setFile] = useState(null);
   const [text, setText] = useState("");
   const [loading, setLoading] = useState(false);
   const [extractedSkills, setExtractedSkills] = useState([]);
+
+  const navigate = useNavigate();
+  
 
   const handleFileChange = (e) => {
     setFile(e.target.files[0]);
@@ -26,6 +30,8 @@ const ResumeUpload = () => {
 
       setText(res.data.text);
       setExtractedSkills(res.data.extractedSkills);
+      alert("Resume Uploaded");
+
 
       console.log("GAP:", res.data.gap);
       console.log("ROADMAP:", res.data.roadmap);
@@ -39,7 +45,15 @@ const ResumeUpload = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-6">
+      
       <div className="bg-white p-6 rounded-lg shadow w-full max-w-xl space-y-4">
+
+        <button
+                        onClick={() => navigate("/profile")}
+                        className="bg-indigo-700 text-white px-4 py-2 mx-4 rounded-lg"
+                    >
+                        See Profile
+                    </button>
 
         <h2 className="text-2xl font-bold text-gray-800">
           Upload Resume

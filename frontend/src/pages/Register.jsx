@@ -66,9 +66,9 @@ const Register = () => {
           />
           <input
             name="password"
-            placeholder="Password"
+            placeholder="Create Password"
             onChange={handleChange}
-            type="Create Password"
+            type="Password"
             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             required
           />

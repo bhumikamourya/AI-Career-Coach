@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { saveResume, getResume } from "../services/api";
+import { useNavigate } from "react-router-dom";
 
 const ResumeBuilder = () => {
   const [form, setForm] = useState({
@@ -12,6 +13,8 @@ const ResumeBuilder = () => {
   });
   const [source, setSource] = useState("");
   const [loading, setLoading] = useState(false);
+
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetchResume();
@@ -67,6 +70,7 @@ const ResumeBuilder = () => {
 
       await saveResume(payload);
       alert("✅ Resume saved successfully");
+      navigate("/profile");
     } catch (err) {
       console.error(err);
       alert("❌ Error saving resume");
@@ -184,7 +188,7 @@ const ResumeBuilder = () => {
           />
         </div>
 
-        {/* BUTTON */}
+        {/*SAVE BUTTON */}
         <button
           onClick={handleSave}
           disabled={loading}
