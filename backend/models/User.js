@@ -9,7 +9,9 @@ const userSchema = new mongoose.Schema(
     email: {
       type: String,
       required: true,
-      unique: true
+       lowercase: true,
+      unique: true,
+       trim: true
     },
     password: {
       type: String,
@@ -20,12 +22,18 @@ const userSchema = new mongoose.Schema(
         {
           name: {
             type: String,
-            required: true
+            required: true,
+            trim: true
           },
           level: {
             type: String,
             enum: ["Beginner", "Intermediate", "Advanced"],
             default: "Beginner"
+          },
+          source:{
+            type: String,
+            enum: ["manual", "resume"],
+            default: "manual"
           }
         }
       ],
@@ -63,36 +71,37 @@ const userSchema = new mongoose.Schema(
       type: Number,
       default: 0
     },
-
+// USER-FACING DATA (derived / merged)
     education: [
-  {
-    college: String,
-    degree: String,
-    year: String
-  }
-],
+      {
+        college: String,
+        degree: String,
+        year: String
+      }
+    ],
 
-projects: [
-  {
-    title: String,
-    description: String,
-    techStack: [String]
-  }
-],
-
-resumeUrl: String,
+    projects: [
+      {
+        title: String,
+        description: String,
+        techStack: [String]
+      }
+    ],
+ // Resume meta
+    resumeType: {
+      type: String,
+      enum: ["upload", "builder"],
+      default: null
+    }
   },
 
   { timestamps: true }
 );
-
+//  PROFILE COMPLETION LOGIC
 userSchema.methods.calculateProfileCompletion = function () {
   return (
     this.targetRole &&
-    this.skills.length > 0 
-    // &&
-    // this.education?.length > 0 &&
-    // this.projects?.length > 0
+    this.skills.length > 0
   );
 };
 

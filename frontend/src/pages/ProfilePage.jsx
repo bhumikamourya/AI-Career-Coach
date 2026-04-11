@@ -22,10 +22,7 @@ const ProfilePage = () => {
             setUser(res.data);
 
             setForm({
-                targetRole: res.data.targetRole || "",
-                skills: (res.data.skills || [])
-                    ?.map((s) => s.name)
-                    .join(", ") || ""
+                targetRole: res.data.targetRole || ""
             });
         } catch (err) {
             console.error(err);
@@ -55,13 +52,11 @@ const ProfilePage = () => {
 
     const handleDeleteSkill = async (name) => {
         try {
-            await fetch("http://localhost:5000/api/user/skill", {
+            await fetch(`http://localhost:5000/api/user/skill/${name}`, {
                 method: "DELETE",
                 headers: {
-                    "Content-Type": "application/json",
                     Authorization: `Bearer ${localStorage.getItem("token")}`
-                },
-                body: JSON.stringify({ name })
+                }
             });
 
             fetchProfile();
@@ -130,8 +125,9 @@ const ProfilePage = () => {
                             user.skills.map((skill, i) => (
                                 <span
                                     key={i}
-                                    className={`px-3 py-1 rounded-full text-sm ${skill.level === "Beginner" ? "bg-red-200" : skill.level === "Intermediate" ? "bg-yellow-200" : "bg-green-200"}`}
+                                    className={`px-4 py-1 rounded-full text-sm  ${skill.level === "Beginner" ? "bg-red-200" : skill.level === "Intermediate" ? "bg-yellow-200" : "bg-green-200"}`}
                                 >
+
                                     {skill.name} ({skill.level})
                                     <button
                                         onClick={() => handleDeleteSkill(skill.name)}
@@ -206,6 +202,15 @@ const ProfilePage = () => {
                             onClick={() => {
                                 if (!skillInput.trim()) return;
 
+                                // Prevent Duplicate
+                                const exists = user.skills.some(
+                                    s => s.name.toLowerCase() === skillInput.toLowerCase()
+                                );
+
+                                if (exists) {
+                                    alert("Skill already added");
+                                    return;
+                                }
                                 setUser({
                                     ...user,
                                     skills: [
@@ -228,6 +233,7 @@ const ProfilePage = () => {
                     </div>
                 </div>
 
+                {/* EDUCATION */}
                 <div className="bg-white p-5 rounded-lg shadow">
                     <h3 className="text-xl font-semibold mb-3">Education</h3>
 
@@ -239,34 +245,46 @@ const ProfilePage = () => {
                     )) || <p>No education added</p>}
                 </div>
 
-                <div className="bg-white p-5 rounded-lg shadow">
+                {/* PROJECTS */}
+                <div className="grid md:grid-cols-2 gap-4">
                     <h3 className="text-xl font-semibold mb-3">Projects</h3>
 
-                    {user.projects?.map((proj, i) => (
-                        <div key={i} className="border p-3 mb-2 rounded">
-                            <p className="font-semibold">{proj.title}</p>
-                            <p className="text-sm">{proj.description}</p>
-                        </div>
-                    )) || <p>No projects added</p>}
+                    {user.projects && user.projects.length > 0 ? (
+                        user.projects.map((proj, i) => (
+                            <div key={i} className="bg-white p-4 rounded-xl shadow hover:shadow-lg transition mb-2">
+                                <p className="font-semibold text-lg text-indigo-600">{proj.title}</p>
+                                <p className="text-sm text-gray-600 mt-2">{proj.description}</p>
+                            </div>
+                        ))
+                    ) : (
+                        <p>No projects added</p>
+                    )}
                 </div>
 
-                <div className="bg-white p-5 rounded-lg shadow">
-                    <h3 className="text-xl font-semibold mb-3">Resume</h3>
+                {/* RESUME  */}
+                <div className="flex gap-3">
 
                     <button
                         onClick={() => navigate("/resume")}
                         className="bg-indigo-500 text-white px-4 py-2 rounded"
                     >
-                        Upload Resume
+                        {user.resumeType === "upload" ? "Update Resume" : "Upload Resume"}
                     </button>
 
                     <button
                         onClick={() => navigate("/resume-builder")}
-                        className="bg-green-500 text-white px-4 py-2 ml-2 rounded"
+                        className="bg-green-500 text-white px-4 py-2 rounded"
                     >
-                        Build Resume
+                        {user.resumeType === "builder" ? "Edit Resume" : "Build Resume"}
                     </button>
+
                 </div>
+
+                {user.resumeType && (
+                    <p className="mt-2 text-sm text-gray-600">
+                        Current: {user.resumeType === "upload" ? "Uploaded Resume" : "Built Resume"}
+                    </p>
+                )}
             </div>
         </div>
     );

@@ -4,27 +4,55 @@ const resumeSchema = new mongoose.Schema({
   userId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "User",
-      required: true,
-      unique: true // one resume per user
+    required: true,
+    unique: true
   },
-  name: {
+
+  rawText: {
     type: String,
-    required: true
-},
-  email: {
-    type: String,
-    required: true
-},
-  education: {
-    type: String,
-    required: true
-},
-  skills: {
-      type: [String],
-      default: []
+    default: ""
+  },
+
+  parsedData: {
+    name: {
+      type: String,
+      trim: true
+    }, email: {
+      type: String,
+      trim: true
     },
-  experience: String,
-  projects: String
+    education: [
+      {
+        college: String,
+        degree: String,
+        year: String
+      }
+    ],
+
+    skills: [
+      {
+        type: String,
+        trim: true
+      }],
+
+    projects: [
+      {
+        title: String,
+        description: String,
+        techStack: [String]
+      }
+    ],
+    experience: {
+      type: String,
+      default: ""
+    }
+  },
+  // SOURCE TRACKING
+  source: {
+    type: String,
+    enum: ["upload", "builder"],
+    required: true
+  }
 }, { timestamps: true });
 
 module.exports = mongoose.model("Resume", resumeSchema);

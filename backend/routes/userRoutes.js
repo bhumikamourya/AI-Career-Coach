@@ -11,7 +11,7 @@ const {
 
 router.get("/profile", protect, getProfile);
 router.put("/profile", protect, updateProfile);
-router.delete("/skill", protect, deleteSkill);
+router.delete("/skill/:name", protect, deleteSkill);
 router.put("/update-password", protect, updatePassword);
 
 module.exports = router;

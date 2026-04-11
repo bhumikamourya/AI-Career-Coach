@@ -41,21 +41,21 @@ exports.updateProfile = async (req, res) => {
 
     const user = await User.findById(req.user.id);
 
-// update role
-if (updateData.targetRole) {
-  user.targetRole = updateData.targetRole;
-}
+    // update role
+    if (updateData.targetRole) {
+      user.targetRole = updateData.targetRole;
+    }
 
-// update skills
-if (updateData.skills) {
-  user.skills = updateData.skills;
-}
+    // update skills
+    if (updateData.skills) {
+      user.skills = updateData.skills;
+    }
 
-user.isProfileComplete = user.calculateProfileCompletion();
+    user.isProfileComplete = user.calculateProfileCompletion();
 
-await user.save();
+    await user.save();
 
-res.json(user);
+    res.json(user);
 
   } catch (err) {
     console.error("UPDATE ERROR:", err.message); // DEBUG LINE
@@ -65,20 +65,30 @@ res.json(user);
 
 exports.deleteSkill = async (req, res) => {
   try {
-    const { name } = req.body;
+    const { name } = req.params;
+
+    if (!name) {
+      return res.status(400).json({ message: "Skill name required" });
+    }
 
     const user = await User.findById(req.user.id);
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
 
     user.skills = user.skills.filter(
       (s) => s.name.toLowerCase() !== name.toLowerCase()
     );
-
 
     await user.save();
 
     res.json(user);
 
   } catch (err) {
+    console.log("PARAM:", req.params);
+        console.error("DELETE ERROR:", err);
+
     res.status(500).json({ message: err.message });
   }
 };
