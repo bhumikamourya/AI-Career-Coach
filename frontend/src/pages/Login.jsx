@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { loginUser } from "../services/api";
+
+import { loginUser, updatePassword } from "../services/api";
 import { useNavigate } from "react-router-dom";
 
 const Login = () => {
@@ -21,6 +22,7 @@ const Login = () => {
       const res = await loginUser(form);
 
       localStorage.setItem("token", res.data.token);
+      localStorage.setItem("user", JSON.stringify(res.data.user));
 
       alert("Login successful");
       navigate("/");

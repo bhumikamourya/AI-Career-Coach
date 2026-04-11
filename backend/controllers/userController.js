@@ -39,16 +39,23 @@ exports.updateProfile = async (req, res) => {
       });
     }
 
-    const user = await User.findByIdAndUpdate(
-      req.user.id,
-      updateData,
-      {
-        new: true,
-        runValidators: true // VERY IMPORTANT
-      }
-    );
+    const user = await User.findById(req.user.id);
 
-    res.json(user);
+// update role
+if (updateData.targetRole) {
+  user.targetRole = updateData.targetRole;
+}
+
+// update skills
+if (updateData.skills) {
+  user.skills = updateData.skills;
+}
+
+user.isProfileComplete = user.calculateProfileCompletion();
+
+await user.save();
+
+res.json(user);
 
   } catch (err) {
     console.error("UPDATE ERROR:", err.message); // DEBUG LINE
@@ -66,10 +73,31 @@ exports.deleteSkill = async (req, res) => {
       (s) => s.name.toLowerCase() !== name.toLowerCase()
     );
 
+
     await user.save();
 
     res.json(user);
 
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+exports.updatePassword = async (req, res) => {
+  try {
+    const { oldPassword, newPassword } = req.body;
+
+    const user = await User.findById(req.user.id);
+
+    const isMatch = await bcrypt.compare(oldPassword, user.password);
+    if (!isMatch) {
+      return res.status(400).json({ message: "Old password incorrect" });
+    }
+
+    user.password = await bcrypt.hash(newPassword, 10);
+    await user.save();
+
+    res.json({ message: "Password updated successfully" });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }

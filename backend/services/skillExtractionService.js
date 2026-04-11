@@ -1,11 +1,17 @@
 const skillDictionary = require("../utils/skillDictionary");
-
 exports.extractSkills = (text) => {
   const lowerText = text.toLowerCase();
+  const foundSkills = [];
 
-  const foundSkills = skillDictionary.filter(skill =>
-    lowerText.includes(skill)
-  );
+  skillDictionary.forEach(skillObj => {
+    const matched = skillObj.aliases.some(alias =>
+      new RegExp(`\\b${alias}\\b`, "i").test(lowerText)
+    );
 
-  return [...new Set(foundSkills.map(s => s.toLowerCase()))];
+    if (matched) {
+      foundSkills.push(skillObj.name);
+    }
+  });
+
+  return [...new Set(foundSkills)];
 };

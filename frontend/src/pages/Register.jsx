@@ -20,6 +20,10 @@ const Register = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    if (!form.targetRole) {
+      return alert("Please select a target role");
+    }
+
     const payload = {
       ...form,
       skills: form.skills.split(",").map((s) => ({
@@ -29,9 +33,11 @@ const Register = () => {
     };
 
     try {
-      await registerUser(payload);
+      const res = await registerUser(payload);
+      localStorage.setItem("token", res.data.token);
       alert("Registered successfully");
-      navigate("/login");
+      navigate("/");
+      
     } catch (err) {
       alert(err.response?.data?.message || "Error");
     }
@@ -62,7 +68,7 @@ const Register = () => {
             name="password"
             placeholder="Password"
             onChange={handleChange}
-            type="password"
+            type="Create Password"
             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             required
           />
@@ -78,7 +84,7 @@ const Register = () => {
           </select>
           <input
             name="skills"
-            placeholder="Skills (comma separated)"
+            placeholder="Optional Skills (comma separated)"
             onChange={handleChange}
             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
           />

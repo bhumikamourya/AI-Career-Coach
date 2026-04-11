@@ -22,6 +22,7 @@ app.use ("/api/resume", require("./routes/resumeRoutes"));
 app.use("/api/resume-builder", require("./routes/resumeBuilderRoutes"));
 app.use("/api/practice", require("./routes/practiceRoutes"));
 app.use("/api/progress", require("./routes/progressRoutes"));
+app.use("/api/interview", require("./routes/interviewRoutes"));
 
 // test
 app.get("/", (req, res) => {

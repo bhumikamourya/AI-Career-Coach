@@ -26,6 +26,9 @@ const ResumeUpload = () => {
 
       setText(res.data.text);
       setExtractedSkills(res.data.extractedSkills);
+
+      console.log("GAP:", res.data.gap);
+      console.log("ROADMAP:", res.data.roadmap);
     } catch (err) {
       console.error(err);
       alert("Upload failed");
@@ -63,15 +66,19 @@ const ResumeUpload = () => {
         )}
 
         {extractedSkills.length > 0 && (
-  <div className="mt-4 p-3 border rounded bg-green-50">
-    <h3 className="font-semibold mb-2 text-green-700">
-      Detected Skills:
-    </h3>
-    <p className="text-sm">
-      {extractedSkills.join(", ")}
-    </p>
-  </div>
-)}
+          <div className="mt-4 p-3 border rounded bg-green-50">
+            <h3 className="font-semibold mb-2 text-green-700">
+              Detected Skills:
+            </h3>
+            <p className="text-sm">
+              {extractedSkills.join(", ")}
+            </p>
+
+            <div className="mt-2 text-sm text-gray-600">
+              These skills have been added to your profile automatically.
+            </div>
+          </div>
+        )}
 
       </div>
     </div>

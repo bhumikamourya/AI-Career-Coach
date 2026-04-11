@@ -10,6 +10,10 @@ exports.register = async (req, res) => {
     if (!name || !email || !password) {
       return res.status(400).json({ message: "All fields required" });
     }
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return res.status(400).json({ message: "Invalid email format" });
+    }
 
     const userExists = await User.findOne({ email });
     if (userExists) {
@@ -18,22 +22,43 @@ exports.register = async (req, res) => {
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
+    let cleanedSkills = [];
+
+    if (skills && Array.isArray(skills)) {
+      cleanedSkills = skills
+        .filter((s) => s.name && s.name.trim() !== "")
+        .map((s) => ({
+          name: s.name.trim(),
+          level: s.level || "Beginner"
+        }));
+    }
+
     const user = await User.create({
       name,
       email,
       password: hashedPassword,
-      targetRole,
-      skills
+      targetRole: targetRole || " ",
+      skills: cleanedSkills
     });
+
+    const token = jwt.sign(
+      { id: user._id },
+      process.env.JWT_SECRET,
+      { expiresIn: "7d" }
+    );
 
     res.status(201).json({
       message: "User registered",
+      token,
       user: {
         _id: user._id,
         name: user.name,
-        email: user.email
+        email: user.email,
+        targetRole: user.targetRole,
+        skills: user.skills
       }
     });
+    // console.log("REGISTER BODY:", req.body);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
@@ -62,7 +87,14 @@ exports.login = async (req, res) => {
 
     res.json({
       message: "Login successful",
-      token
+      token,
+      user: {
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+        targetRole: user.targetRole,
+        skills: user.skills
+      }
     });
   } catch (err) {
     res.status(500).json({ message: err.message });

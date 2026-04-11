@@ -1,23 +1,21 @@
 const User = require("../models/User");
-const { getSkillGap } = require("../services/skillGapService");
-const { generateRoadmap } = require("../services/roadmapService");
+const { runEngine } = require("../services/engineService");
 
 exports.getRoadmap = async (req, res) => {
   try {
     const user = await User.findById(req.user.id);
 
-    const gap = getSkillGap(user.skills, user.targetRole);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
 
-    const roadmap = generateRoadmap(
-      user.targetRole,
-      gap.missingSkills,
-      gap.weakSkills
-    );
+    // Run engine (single source of truth)
+    const result = await runEngine(user, 0); // no test happening her, so we don't change readiness artificially
 
-
+    const roadmap = result.roadmap;
     const newTopics = roadmap.roadmap.map((item) => item.topic);
 
-    // check if topics changed
+    // Progress initialization
     const isDifferent =
       !user.progress ||
       user.progress.length !== newTopics.length ||
@@ -32,7 +30,8 @@ exports.getRoadmap = async (req, res) => {
       await user.save();
     }
 
-    
+
+     // Remaining days calculation
     roadmap.roadmap = roadmap.roadmap.map((item) => {
       const progress = user.progress?.find(
         (p) => p.topic === item.topic
@@ -50,7 +49,6 @@ exports.getRoadmap = async (req, res) => {
         remainingDays
       };
     });
-
     res.json(roadmap);
 
   } catch (err) {

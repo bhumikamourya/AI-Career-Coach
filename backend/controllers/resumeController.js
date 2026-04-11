@@ -1,6 +1,8 @@
 const fs = require("fs");
 const pdfParse = require("pdf-parse");
 const mammoth = require("mammoth");
+const { getSkillGap } = require("../services/skillGapService");
+const { generateRoadmap } = require("../services/roadmapService");
 
 const { extractSkills } = require("../services/skillExtractionService");
 const User = require("../models/User");
@@ -20,14 +22,14 @@ exports.uploadResume = async (req, res) => {
       const dataBuffer = fs.readFileSync(filePath);
       const data = await pdfParse(dataBuffer);
       extractedText = data.text;
-    } 
+    }
     else if (
       req.file.mimetype ===
       "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
     ) {
       const result = await mammoth.extractRawText({ path: filePath });
       extractedText = result.value;
-    } 
+    }
     else {
       return res.status(400).json({
         message: "Only PDF and DOCX allowed"
@@ -49,24 +51,39 @@ exports.uploadResume = async (req, res) => {
       typeof s === "string" ? s.toLowerCase() : s.name.toLowerCase()
     );
 
+    const detectLevel = (text, skill) => {
+      const lower = text.toLowerCase();
+
+      if (lower.includes(`advanced ${skill}`)) return "Advanced";
+      if (lower.includes(`intermediate ${skill}`)) return "Intermediate";
+
+      return "Beginner";
+    };
+
     const newSkills = extractedSkills
       .filter(skill => !existingSkills.includes(skill.toLowerCase()))
       .map(skill => ({
         name: skill.toLowerCase(),
-        level: "Beginner"
+        level: detectLevel(extractedText, skill)
       }));
 
     // 6. MERGE SKILLS
     user.skills.push(...newSkills);
 
+    user.resumeUrl = filePath;
     await user.save();
+
+    const gap = getSkillGap(user.skills, user.targetRole);
+    const roadmap = generateRoadmap(user.targetRole, gap.missingSkills);
 
     // 7. RESPONSE
     res.json({
       message: "Resume uploaded & skills updated",
       text: extractedText,
       extractedSkills: extractedSkills,
-      addedSkills: newSkills.map(s => s.name)
+      addedSkills: newSkills.map(s => s.name),
+       gap,
+      roadmap
     });
 
   } catch (err) {

@@ -5,11 +5,13 @@ const protect = require("../middlewares/authMiddleware");
 const {
   getProfile,
   updateProfile,
-  deleteSkill
+  deleteSkill,
+  updatePassword
 } = require("../controllers/userController");
 
 router.get("/profile", protect, getProfile);
 router.put("/profile", protect, updateProfile);
 router.delete("/skill", protect, deleteSkill);
+router.put("/update-password", protect, updatePassword);
 
 module.exports = router;

@@ -77,7 +77,7 @@ const Practice = () => {
     }
   };
 
-   if (blocked) {
+  if (blocked) {
     return (
       <div className="p-6 max-w-xl mx-auto text-center">
         <h2 className="text-2xl font-bold text-red-600 mb-4">
@@ -105,17 +105,13 @@ const Practice = () => {
     return (
       <div className="p-6 max-w-4xl mx-auto">
 
-        <button
-          onClick={() => navigate("/")}
-          className="mb-4 bg-gray-500 text-white px-4 py-2 rounded"
-        >
-          ← Back to Dashboard
-        </button>
-
         <h2 className="text-2xl font-bold mb-4">Test Result</h2>
 
+        <p className="text-sm text-gray-600">
+          Priority updated based on your performance in weak topics.
+        </p>
         <button
-          onClick={() => navigate("/")}
+          onClick={() => { navigate("/"); window.location.reload(); }}
           className="mt-4 ml-3 bg-green-600 text-white px-4 py-2 rounded"
         >
           Go to Dashboard (See Skill Update)
@@ -131,6 +127,24 @@ const Practice = () => {
             Wrong: <span className="text-red-600">{result.wrong}</span>
           </p>
           <p>Score: {result.percentage}%</p>
+
+          <div className="bg-green-100 p-4 rounded mb-4">
+            <h3 className="font-semibold">Readiness Score</h3>
+            <p className="text-xl font-bold">{result.readinessScore}%</p>
+
+            <p>
+              {result.readinessScore >= 75
+                ? "✅ You are ready for interviews"
+                : "❌ You need more practice"}
+            </p>
+          </div>
+
+          <div className="bg-yellow-100 p-4 rounded mb-4">
+            <h3 className="font-semibold">Recommendations</h3>
+            {result.recommendations.map((rec, i) => (
+              <p key={i}>• {rec}</p>
+            ))}
+          </div>
         </div>
 
         {/* 🔥 UPDATED SKILLS */}

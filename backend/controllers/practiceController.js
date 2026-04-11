@@ -3,6 +3,10 @@ const Result = require("../models/Result");
 const User = require("../models/User");
 const { getSkillGap } = require("../services/skillGapService");
 const { generateRoadmap } = require("../services/roadmapService");
+const { calculateReadiness } = require("../services/readinessService");
+const { getRecommendations } = require("../services/recommendationService");
+
+const { runEngine } = require("../services/engineService");
 
 //  GET QUESTIONS
 exports.getQuestions = async (req, res) => {
@@ -22,7 +26,7 @@ exports.getQuestions = async (req, res) => {
     // CHECK PROGRESS
     const total = user.progress.length;
 
-const completed = user.progress.filter((p) => p.theoryDone && p.practiceDone).length;
+    const completed = user.progress.filter((p) => p.theoryDone && p.practiceDone).length;
     const percentage = total === 0 ? 0 : (completed / total) * 100;
 
     if (percentage < 70) {
@@ -121,30 +125,29 @@ exports.submitAnswers = async (req, res) => {
 
     await user.save();
 
-    const skillMap = new Map();
+    const combinedSkills = user.skills.map((skill) => {
+      const evaluated = user.evaluatedSkills.find(
+        (s) => s.name.toLowerCase() === skill.name.toLowerCase()
+      );
 
-    // user input skills
-    user.skills.forEach((s) => {
-      skillMap.set(s.name.toLowerCase(), s);
+      return evaluated
+        ? {
+          name: skill.name,
+          level: evaluated.level
+        }
+        : skill;
     });
+    const percentage = Math.round((correct / answers.length) * 100);
+    console.log("Percentage:", percentage);
 
-    // evaluated skills override
-    user.evaluatedSkills.forEach((s) => {
-      skillMap.set(s.name.toLowerCase(), s);
-    });
+    const engineResult = await runEngine(user, percentage);
 
-    const combinedSkills = Array.from(skillMap.values());
+    // use engine output only
+    const updatedGap = engineResult.gap;
+    const updatedRoadmap = engineResult.roadmap;
+    const readinessScore = engineResult.readinessScore;
 
-    const updatedGap = getSkillGap(combinedSkills, user.targetRole);
-
-    const updatedRoadmap = generateRoadmap(
-      user.targetRole,
-      updatedGap.missingSkills,
-      updatedGap.weakSkills
-    );
-
-    const percentage = ((correct / answers.length) * 100).toFixed(0);
-
+    const recommendations = getRecommendations(engineResult.gap);
     // Save result
     await Result.create({
       userId: user._id,
@@ -163,8 +166,10 @@ exports.submitAnswers = async (req, res) => {
       topicStats,
       answers: detailed,
       evaluatedSkills: user.evaluatedSkills,
-      updatedGap,
-      updatedRoadmap
+      updatedGap: engineResult.gap,
+      updatedRoadmap: engineResult.roadmap,
+      readinessScore: engineResult.readinessScore,
+      recommendations
     });
 
   } catch (err) {
