@@ -17,7 +17,7 @@ exports.runEngine = async (user, testScore = 0) => {
   const combinedSkills = Array.from(skillMap.values());
 
   //  Skill Gap
-  const gap = getSkillGap(combinedSkills, user.targetRole);
+  const gap = await getSkillGap(combinedSkills, user.targetRole);
 
   //  Roadmap
   const roadmapData = generateRoadmap(

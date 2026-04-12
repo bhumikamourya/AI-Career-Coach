@@ -1,4 +1,5 @@
 const User = require("../models/User");
+const Role = require("../models/Role");
 
 // GET PROFILE
 exports.getProfile = async (req, res) => {
@@ -41,16 +42,37 @@ exports.updateProfile = async (req, res) => {
 
     const user = await User.findById(req.user.id);
 
-    // update role
-    if (updateData.targetRole) {
+    let isChanged = false;
+
+    if (updateData.targetRole && updateData.targetRole !== user.targetRole) {
+      const roleData = await Role.findOne({ name: updateData.targetRole });
+
+      if (!roleData) {
+        return res.status(400).json({ message: "Invalid role selected" });
+      }
+
       user.targetRole = updateData.targetRole;
+
+      //  IMPORTANT: update role skills
+      user.roleSkills = roleData.skills;
+
+      //  RESET EVERYTHING
+      user.progress = [];
+      user.evaluatedSkills = [];
+      user.readinessScore = 0;
+
+      isChanged = true;
     }
 
-    // update skills
+    // SKILL CHANGE
     if (updateData.skills) {
       user.skills = updateData.skills;
-    }
 
+      // RESET evaluation only
+      user.evaluatedSkills = [];
+
+      isChanged = true;
+    }
     user.isProfileComplete = user.calculateProfileCompletion();
 
     await user.save();
@@ -81,13 +103,15 @@ exports.deleteSkill = async (req, res) => {
       (s) => s.name.toLowerCase() !== name.toLowerCase()
     );
 
+    user.evaluatedSkills = [];
+
     await user.save();
 
     res.json(user);
 
   } catch (err) {
     console.log("PARAM:", req.params);
-        console.error("DELETE ERROR:", err);
+    console.error("DELETE ERROR:", err);
 
     res.status(500).json({ message: err.message });
   }

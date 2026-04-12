@@ -25,12 +25,14 @@ const questionSchema = new mongoose.Schema({
     type: String,
     required :true
   },
-   roles: [
-  {
-    type: String,
-    enum: ["Frontend Developer", "Backend Developer", "Full Stack Developer"]
-  }
-]
+  roles: [String]
+  
+//    roles: [
+//   {
+//     type: String,
+//     enum: ["Frontend Developer", "Backend Developer", "Full Stack Developer"]
+//   }
+// ]
 }, { timestamps: true });
 
 module.exports = mongoose.model("Question", questionSchema);

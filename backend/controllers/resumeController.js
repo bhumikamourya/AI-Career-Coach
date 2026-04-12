@@ -38,11 +38,6 @@ exports.uploadResume = async (req, res) => {
       });
     }
 
-    // 3. SKILL, projects, eduaction EXTRACTION
-    const extractedSkills = extractSkills(extractedText);
-    const extractedEducation = extractEducation(extractedText);
-    const extractedProjects = extractProjects(extractedText);
-
     // 4. FETCH USER
     const user = await User.findById(req.user.id);
 
@@ -50,39 +45,67 @@ exports.uploadResume = async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
 
-    // 5. REMOVE DUPLICATES (IMPORTANT)
-    const existingSkills = user.skills.map(s =>
-      typeof s === "string" ? s.toLowerCase() : s.name.toLowerCase()
+    // SKILL, projects, eduaction EXTRACTION
+    const extractedSkillsRaw = await extractSkills(
+      extractedText,
+      user.targetRole
     );
 
+    const extractedSkills = (extractedSkillsRaw || [])
+      .map(s => typeof s === "string" ? s : s?.name || "")
+      .map(s => s.toLowerCase())
+      .filter(Boolean);
+    const extractedEducation = extractEducation(extractedText);
+    const extractedProjects = extractProjects(extractedText);
+
+    // detect level
     const detectLevel = (text, skill) => {
       const lower = text.toLowerCase();
+      const s = skill.toLowerCase();
 
-      if (lower.includes(`advanced ${skill}`)) return "Advanced";
-      if (lower.includes(`intermediate ${skill}`)) return "Intermediate";
+      if (lower.includes(`advanced ${s}`)) return "Advanced";
+      if (lower.includes(`intermediate ${s}`)) return "Intermediate";
 
       return "Beginner";
     };
 
-    const newSkills = extractedSkills
-      .filter(skill => !existingSkills.includes(skill.toLowerCase()))
-      .map(skill => ({
-        name: skill.toLowerCase(),
-        level: detectLevel(extractedText, skill)
-      }));
+    // build fresh resume skills
+    const resumeSkills = extractedSkills
+      .map(skill => {
+        const name =
+          typeof skill === "string"
+            ? skill
+            : skill?.name || skill?.skill || "";
 
-    // 6. MERGE SKILLS
-    user.skills.push(...newSkills);
+        if (!name) return null;
 
-   // Merge Projects
-if (extractedProjects.length > 0 ) {
-  user.projects = extractedProjects;
-}
+        return {
+          name: name.toLowerCase(),
+          level: detectLevel(extractedText, name),
+          source: "resume"
+        };
+      })
+      .filter(Boolean);
 
-// Merge Education
-if (extractedEducation.length > 0 ) {
-  user.education = extractedEducation;
-}
+    const extractedSkillSet = new Set(extractedSkills);
+
+    const manualSkills = user.skills.filter(
+      s =>
+        s.source === "manual" &&
+        !extractedSkillSet.has(s.name.toLowerCase())
+    );
+    // FINAL MERGE (clean)
+    user.skills = [...manualSkills, ...resumeSkills];
+
+    // Merge Projects
+    if (extractedProjects.length > 0) {
+      user.projects = extractedProjects;
+    }
+
+    // Merge Education
+    if (extractedEducation.length > 0) {
+      user.education = extractedEducation;
+    }
 
     user.resumeType = "upload";
     user.resumeUrl = filePath;
@@ -90,22 +113,22 @@ if (extractedEducation.length > 0 ) {
     await user.save();
 
     await Resume.findOneAndUpdate(
-  { userId: req.user.id },
-  {
-    userId: req.user.id,
-    rawText: extractedText,
-    parsedData: {
-      name: user.name,
-      email: user.email,
-      education: extractedEducation,
-      skills: extractedSkills,
-      projects: extractedProjects,
-      experience: ""
-    },
-    source: "upload"
-  },
-  { upsert: true }
-);
+      { userId: req.user.id },
+      {
+        userId: req.user.id,
+        rawText: extractedText,
+        parsedData: {
+          name: user.name,
+          email: user.email,
+          education: extractedEducation,
+          skills: extractedSkills,
+          projects: extractedProjects,
+          experience: ""
+        },
+        source: "upload"
+      },
+      { upsert: true }
+    );
 
     const gap = getSkillGap(user.skills, user.targetRole);
     const roadmap = generateRoadmap(user.targetRole, gap.missingSkills);
@@ -115,13 +138,13 @@ if (extractedEducation.length > 0 ) {
       message: "Resume uploaded & skills updated",
       text: extractedText,
       extractedSkills: extractedSkills,
-      addedSkills: newSkills.map(s => s.name),
+      resumeSkills: resumeSkills.map(s => s.name),
       education: extractedEducation,
       projects: extractedProjects,
       gap,
       roadmap
     });
-// console.log(JSON.stringify(extractedProjects, null, 2));
+    // console.log(JSON.stringify(extractedProjects, null, 2));
   } catch (err) {
     console.error("RESUME ERROR:", err);
     res.status(500).json({ message: err.message });

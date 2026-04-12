@@ -29,6 +29,7 @@ const Practice = () => {
     }
   };
 
+
   const current = questions[index];
 
   // STORE ANSWER
@@ -119,6 +120,7 @@ const Practice = () => {
 
         {/* SUMMARY */}
         <div className="bg-white p-4 rounded shadow mb-4">
+
           <p>Total Questions: {result.total}</p>
           <p>
             Correct: <span className="text-green-600">{result.correct}</span>
@@ -239,6 +241,12 @@ const Practice = () => {
 
   return (
     <div className="p-6 max-w-xl mx-auto">
+      <div className="w-full bg-gray-200 h-2 rounded mb-4">
+            <div
+              className="bg-blue-500 h-2 rounded"
+              style={{ width: `${((index + 1) / questions.length) * 100}%` }}
+            ></div>
+          </div>
       <h2 className="text-xl font-bold mb-4">
         Question {index + 1} / {questions.length}
       </h2>

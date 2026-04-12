@@ -2,11 +2,12 @@ const Question = require("../models/Question");
 const Result = require("../models/Result");
 const User = require("../models/User");
 const { getSkillGap } = require("../services/skillGapService");
-const { generateRoadmap } = require("../services/roadmapService");
-const { calculateReadiness } = require("../services/readinessService");
+// const { generateRoadmap } = require("../services/roadmapService");
+// const { calculateReadiness } = require("../services/readinessService");
 const { getRecommendations } = require("../services/recommendationService");
 
 const { runEngine } = require("../services/engineService");
+const Role = require("../models/Role");
 
 //  GET QUESTIONS
 exports.getQuestions = async (req, res) => {
@@ -16,11 +17,14 @@ exports.getQuestions = async (req, res) => {
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
+    if (!user.targetRole) {
+      return res.status(400).json({ message: "Set target role first" });
+    }
 
-    const role = user.targetRole;
+    const role = await Role.findOne({ name: user.targetRole });
 
     if (!role) {
-      return res.status(400).json({ message: "Set target role first" });
+      return res.status(400).json({ message: "Role not configured" });
     }
 
     // CHECK PROGRESS
@@ -36,10 +40,29 @@ exports.getQuestions = async (req, res) => {
       });
     }
 
-    const questions = await Question.aggregate([
-      { $match: { roles: role } },
-      { $sample: { size: 20 } }
-    ]);
+    let questions = [];
+
+    // DYNAMIC QUESTION GENERATION
+    for (let skill of role.skills) {
+      const count = skill.weight >= 4 ? 4 : 2; // dynamic
+      const skillQuestions = await Question.aggregate([
+        {
+          $match: {
+            topic: skill.name,
+            roles: user.targetRole
+          }
+        },
+        { $sample: { size: count } } // 2 per skill
+      ]);
+
+      questions.push(...skillQuestions);
+    }
+
+    // LIMIT TOTAL QUESTIONS
+    questions = questions.slice(0, 25);
+
+    // SHUFFLE
+    questions.sort(() => Math.random() - 0.5);
 
     res.json(questions);
 
@@ -64,24 +87,57 @@ exports.submitAnswers = async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
 
+    // fetch role once
+    const role = await Role.findOne({ name: user.targetRole });
+    if (!role) {
+      return res.status(400).json({ message: "Invalid role" });
+    }
+
+    // get all question ids
+    const questionIds = answers.map(a => a.questionId);
+
+    // fetch all questions at once
+    const questions = await Question.find({ _id: { $in: questionIds } });
+
+    // create map
+    const questionMap = {};
+    questions.forEach(q => {
+      questionMap[q._id.toString()] = q;
+    });
+
     let correct = 0;
     let wrong = 0;
+    let totalWeight = 0;
+    let scoreWeight = 0;
+
     const detailed = [];
     const topicStats = {};
 
     for (let ans of answers) {
-      const q = await Question.findById(ans.questionId);
+      const q = questionMap[ans.questionId];
 
       if (!q || !ans.selected) continue;
+
+      const skill = role.skills.find(
+        s => s.name.toLowerCase() === q.topic.toLowerCase()
+      );
+
+      const weight = skill?.weight || 1;
+
+      totalWeight += weight;
 
       const isCorrect =
         q.answer.trim().toLowerCase() ===
         ans.selected.trim().toLowerCase();
 
-      if (isCorrect) correct++;
-      else wrong++;
+      if (isCorrect) {
+        correct++;
+        scoreWeight += weight;
+      } else {
+        wrong++;
+      }
 
-      // Topic tracking
+      // topic tracking (keep your existing logic)
       if (!topicStats[q.topic]) {
         topicStats[q.topic] = { correct: 0, total: 0 };
       }
@@ -125,20 +181,7 @@ exports.submitAnswers = async (req, res) => {
 
     await user.save();
 
-    const combinedSkills = user.skills.map((skill) => {
-      const evaluated = user.evaluatedSkills.find(
-        (s) => s.name.toLowerCase() === skill.name.toLowerCase()
-      );
-
-      return evaluated
-        ? {
-          name: skill.name,
-          level: evaluated.level
-        }
-        : skill;
-    });
-    const percentage = Math.round((correct / answers.length) * 100);
-    console.log("Percentage:", percentage);
+    const percentage = Math.round((scoreWeight / totalWeight) * 100); console.log("Percentage:", percentage);
 
     const engineResult = await runEngine(user, percentage);
 
@@ -151,8 +194,9 @@ exports.submitAnswers = async (req, res) => {
     // Save result
     await Result.create({
       userId: user._id,
-      score: correct,
-      total: answers.length,
+      score: scoreWeight,
+      total: totalWeight,
+      percentage,
       answers: detailed
     });
 

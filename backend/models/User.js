@@ -60,8 +60,8 @@ const userSchema = new mongoose.Schema(
     ],
     targetRole: {
       type: String,
-      default: "",
-      enum: ["Frontend Developer", "Backend Developer", "Full Stack Developer"]
+      default: ""
+      // enum: ["Frontend Developer", "Backend Developer", "Full Stack Developer"]
     },
     isProfileComplete: {
       type: Boolean,
@@ -87,12 +87,18 @@ const userSchema = new mongoose.Schema(
         techStack: [String]
       }
     ],
- // Resume meta
     resumeType: {
       type: String,
       enum: ["upload", "builder"],
       default: null
-    }
+    },
+    roleSkills: [
+  {
+    name: String,
+    level: String,
+    weight: Number
+  }
+],
   },
 
   { timestamps: true }

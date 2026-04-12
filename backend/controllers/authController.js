@@ -1,6 +1,7 @@
 const User = require("../models/User");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const Role = require("../models/Role");
 
 // REGISTER
 exports.register = async (req, res) => {
@@ -33,12 +34,26 @@ exports.register = async (req, res) => {
         }));
     }
 
+    if (targetRole) {
+  const roleData = await Role.findOne({ name: targetRole });
+
+  if (!roleData) {
+    return res.status(400).json({ message: "Invalid role selected" });
+  }
+
+  roleSkills = roleData.skills;
+}
+
+if (!targetRole) {
+  return res.status(400).json({ message: "Target role is required" });
+}
     const user = await User.create({
       name,
       email,
       password: hashedPassword,
-      targetRole: targetRole || " ",
-      skills: cleanedSkills
+      targetRole,
+      skills: cleanedSkills,
+      roleSkills
     });
 
     const token = jwt.sign(

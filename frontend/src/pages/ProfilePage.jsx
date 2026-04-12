@@ -1,9 +1,12 @@
 import { useEffect, useState } from "react";
-import { getProfile, updateProfile } from "../services/api";
+import { getProfile, getRoles, updateProfile } from "../services/api";
 import { useNavigate } from "react-router-dom";
 
 const ProfilePage = () => {
     const [user, setUser] = useState(null);
+
+    const [roles, setRoles] = useState([]);
+
     const [form, setForm] = useState({
         targetRole: "",
         skills: ""
@@ -14,6 +17,7 @@ const ProfilePage = () => {
 
     useEffect(() => {
         fetchProfile();
+        fetchRoles();
     }, []);
 
     const fetchProfile = async () => {
@@ -29,6 +33,15 @@ const ProfilePage = () => {
         }
     };
 
+    const fetchRoles = async () => {
+        try {
+            const res = await getRoles();
+            setRoles(res.data);
+        } catch (err) {
+            console.error(err);
+        }
+    };
+
     const handleChange = (e) => {
         setForm({ ...form, [e.target.name]: e.target.value });
     };
@@ -36,7 +49,7 @@ const ProfilePage = () => {
     const handleUpdate = async () => {
         try {
             const payload = {
-                targetRole: user.targetRole,
+                targetRole: form.targetRole,
                 skills: user.skills
             };
 
@@ -173,9 +186,12 @@ const ProfilePage = () => {
                     className="w-full p-2 border rounded-lg"
                 >
                     <option value="">Select Role</option>
-                    <option value="Frontend Developer">Frontend Developer</option>
-                    <option value="Backend Developer">Backend Developer</option>
-                    <option value="Full Stack Developer">Full Stack Developer</option>
+
+                    {roles.map((role) => (
+                        <option key={role._id} value={role.name}>
+                            {role.name}
+                        </option>
+                    ))}
                 </select>
 
                 <div className="bg-white p-4 rounded-lg shadow">

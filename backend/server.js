@@ -16,6 +16,9 @@ connectDB();
 // routes
 app.use("/api/auth", require("./routes/authRoutes"));
 app.use("/api/user", require("./routes/userRoutes"));
+
+app.use("/api/roles", require("./routes/roleRoutes"));
+
 app.use("/api/skill-gap", require("./routes/skillGapRoutes"));
 app.use("/api/roadmap", require("./routes/roadmapRoutes"));
 app.use ("/api/resume", require("./routes/resumeRoutes"));

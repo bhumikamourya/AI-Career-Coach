@@ -9,8 +9,13 @@ exports.getRoadmap = async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
 
+    if (!user.targetRole) {
+      return res.status(400).json({ message: "Target role not set" });
+    }
     // Run engine (single source of truth)
-    const result = await runEngine(user, 0); // no test happening her, so we don't change readiness artificially
+    if (!user.roadmap || user.roadmap.length === 0) {
+      await runEngine(user, 0);
+    } 
 
     const roadmap = result.roadmap;
     const newTopics = roadmap.roadmap.map((item) => item.topic);
@@ -31,7 +36,7 @@ exports.getRoadmap = async (req, res) => {
     }
 
 
-     // Remaining days calculation
+    // Remaining days calculation
     roadmap.roadmap = roadmap.roadmap.map((item) => {
       const progress = user.progress?.find(
         (p) => p.topic === item.topic

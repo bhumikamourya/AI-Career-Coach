@@ -1,9 +1,11 @@
-import { useState } from "react";
-import { registerUser } from "../services/api";
+import { useState, useEffect } from "react";
+import { registerUser, getRoles } from "../services/api";
 import { useNavigate } from "react-router-dom";
 
 const Register = () => {
   const navigate = useNavigate();
+
+  const [roles, setRoles] = useState([]);
 
   const [form, setForm] = useState({
     name: "",
@@ -12,6 +14,19 @@ const Register = () => {
     targetRole: "",
     skills: ""
   });
+
+  useEffect(() => {
+    fetchRoles();
+  }, []);
+
+  const fetchRoles = async () => {
+    try {
+      const res = await getRoles();
+      setRoles(res.data);
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -26,10 +41,12 @@ const Register = () => {
 
     const payload = {
       ...form,
-      skills: form.skills.split(",").map((s) => ({
-        name: s.trim(),
-        level: "Beginner"
-      }))
+      skills: form.skills
+        ? form.skills.split(",").map((s) => ({
+          name: s.trim(),
+          level: "Beginner"
+        }))
+        : []
     };
 
     try {
@@ -37,7 +54,7 @@ const Register = () => {
       localStorage.setItem("token", res.data.token);
       alert("Registered successfully");
       navigate("/");
-      
+
     } catch (err) {
       alert(err.response?.data?.message || "Error");
     }
@@ -74,13 +91,16 @@ const Register = () => {
           />
           <select
             name="targetRole"
-            placeholder="Target Role (Frontend / Backend / Full Stack)"
             onChange={handleChange}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+            className="w-full px-4 py-2 border rounded-lg"
+          >
             <option value="">Select Role</option>
-            <option value="Frontend Developer">Frontend Developer</option>
-            <option value="Backend Developer">Backend Developer</option>
-            <option value="Full Stack Developer">Full Stack Developer</option>
+
+            {roles?.map((role) => (
+              <option key={role._id} value={role.name}>
+                {role.name}
+              </option>
+            ))}
           </select>
           <input
             name="skills"

@@ -18,10 +18,10 @@ API.interceptors.request.use((req) => {
 export const registerUser = (data) => API.post("/auth/register", data);
 export const loginUser = (data) => API.post("/auth/login", data);
 export const updatePassword = (data) =>API.put("/user/update-password", data);
+
+export const getRoles = () => API.get("/roles");
 export const getProfile = () => API.get("/user/profile");
 export const updateProfile = (data) => API.put("/user/profile", data);
-export const getRole = () => API.get("/user/roles");
-
 export const getSkillGap = () => API.get("/skill-gap");
 export const getRoadmap = () => API.get("/roadmap");
 export const uploadResume = (formData) =>

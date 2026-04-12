@@ -19,7 +19,7 @@ const Dashboard = () => {
   const [loadingRoadmap, setLoadingRoadmap] = useState(false);
 
   useEffect(() => {
-    // fetchProfile();
+    fetchProfile();
     handleSkillGap();
     handleRoadmap();
   }, []);

@@ -1,4 +1,4 @@
-const roleSkills = require("../utils/roleSkills");
+const Role = require("../models/Role");
 
 const levelMap = {
   Beginner: 1,
@@ -6,8 +6,10 @@ const levelMap = {
   Advanced: 3
 };
 
-exports.getSkillGap = (userSkills, targetRole) => {
-  if (!userSkills || !targetRole) {
+exports.getSkillGap = async (userSkills, targetRole) => {
+  const role = await Role.findOne({ name: targetRole });
+
+  if (!role) {
     return {
       requiredSkills: [],
       matchedSkills: [],
@@ -16,7 +18,7 @@ exports.getSkillGap = (userSkills, targetRole) => {
     };
   }
 
-  const required = roleSkills[targetRole] || [];
+   const required = role.skills;
 
   const userMap = {};
   userSkills.forEach((s) => {
