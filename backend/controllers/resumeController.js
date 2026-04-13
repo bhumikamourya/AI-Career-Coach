@@ -1,13 +1,11 @@
 const fs = require("fs");
 const pdfParse = require("pdf-parse");
 const mammoth = require("mammoth");
-const { getSkillGap } = require("../services/skillGapService");
-const { generateRoadmap } = require("../services/roadmapService");
-
 const { extractSkills } = require("../services/skillExtractionService");
 const { extractEducation, extractProjects } = require("../services/resumeParserService");
 const User = require("../models/User");
 const Resume = require("../models/Resume");
+const { runEngine } = require("../services/engineService");
 
 exports.uploadResume = async (req, res) => {
   try {
@@ -49,7 +47,7 @@ exports.uploadResume = async (req, res) => {
     const extractedSkillsRaw = await extractSkills(
       extractedText,
       user.targetRole
-    );
+    ) || [];
 
     const extractedSkills = (extractedSkillsRaw || [])
       .map(s => typeof s === "string" ? s : s?.name || "")
@@ -87,8 +85,9 @@ exports.uploadResume = async (req, res) => {
       })
       .filter(Boolean);
 
-    const extractedSkillSet = new Set(extractedSkills);
-
+const extractedSkillSet = new Set(
+  extractedSkills.map(s => s.toLowerCase())
+);
     const manualSkills = user.skills.filter(
       s =>
         s.source === "manual" &&
@@ -109,8 +108,9 @@ exports.uploadResume = async (req, res) => {
 
     user.resumeType = "upload";
     user.resumeUrl = filePath;
+        const result = await runEngine(user);
 
-    await user.save();
+    // await user.save();
 
     await Resume.findOneAndUpdate(
       { userId: req.user.id },
@@ -130,19 +130,15 @@ exports.uploadResume = async (req, res) => {
       { upsert: true }
     );
 
-    const gap = getSkillGap(user.skills, user.targetRole);
-    const roadmap = generateRoadmap(user.targetRole, gap.missingSkills);
-
     // 7. RESPONSE
     res.json({
       message: "Resume uploaded & skills updated",
-      text: extractedText,
+      // text: extractedText,
       extractedSkills: extractedSkills,
       resumeSkills: resumeSkills.map(s => s.name),
       education: extractedEducation,
       projects: extractedProjects,
-      gap,
-      roadmap
+      ...result
     });
     // console.log(JSON.stringify(extractedProjects, null, 2));
   } catch (err) {

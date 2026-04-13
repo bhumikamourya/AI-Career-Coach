@@ -13,16 +13,24 @@ const Dashboard = () => {
   });
 
   const [analysis, setAnalysis] = useState(null);
-  const [roadmap, setRoadmap] = useState(null);
+  const [roadmap, setRoadmap] = useState({
+    roadmap: [],
+    gap: {}
+  });
 
   const [loadingGap, setLoadingGap] = useState(false);
   const [loadingRoadmap, setLoadingRoadmap] = useState(false);
 
   useEffect(() => {
     fetchProfile();
-    handleSkillGap();
-    handleRoadmap();
   }, []);
+
+  useEffect(() => {
+    if (user) {
+      handleSkillGap();
+      handleRoadmap();
+    }
+  }, [user]);
 
   const fetchProfile = async () => {
     try {
@@ -44,7 +52,13 @@ const Dashboard = () => {
     try {
       setLoadingGap(true);
       const res = await getSkillGap();
-      setAnalysis(res.data.analysis);
+
+      setAnalysis(res.data?.analysis || {
+        missingSkills: [],
+        weakSkills: [],
+        matchedSkills: [],
+        requiredSkills: []
+      });
     } catch (err) {
       console.error(err);
     } finally {
@@ -55,7 +69,7 @@ const Dashboard = () => {
   const total = (user?.progress?.length || 0) * 2;
 
   const completed = user?.progress
-    ? user.progress.reduce((acc, p) => {
+    ? (user?.progress || []).reduce((acc, p) => {
       return acc +
         (p.theoryDone ? 1 : 0) +
         (p.practiceDone ? 1 : 0);
@@ -67,8 +81,11 @@ const Dashboard = () => {
   const handleRoadmap = async () => {
     try {
       setLoadingRoadmap(true);
+
       const res = await getRoadmap();
-      setRoadmap(res.data);
+
+      // console.log("FINAL ROADMAP:", res.data);
+      setRoadmap(res.data || { roadmap: [], gap: {} });
     } catch (err) {
       console.error(err);
     } finally {
@@ -82,9 +99,9 @@ const Dashboard = () => {
       return;
     }
 
-    const total = user.progress.length * 2;
+    const total = (user?.progress || []).length * 2;
 
-    const completed = user.progress.reduce((acc, p) => {
+    const completed = (user?.progress || []).reduce((acc, p) => {
       return acc + (p.theoryDone ? 1 : 0) + (p.practiceDone ? 1 : 0);
     }, 0);
 
@@ -102,11 +119,8 @@ const Dashboard = () => {
       await markProgress({ topic, type });
       await fetchProfile();
 
-      const gapRes = await getSkillGap();
-      setAnalysis(gapRes.data.analysis);
-
-      const res = await getRoadmap();
-      setRoadmap(res.data);
+      await handleSkillGap();
+      await handleRoadmap();
 
     } catch (err) {
       console.error(err);
@@ -118,15 +132,15 @@ const Dashboard = () => {
       <div className="max-w-4xl mx-auto space-y-6">
 
         {/* HEADER */}
-          <h2 className="text-3xl font-bold text-gray-800">
-            Career Progress Dashboard
-          </h2>          
+        <h2 className="text-3xl font-bold text-gray-800">
+          Career Progress Dashboard
+        </h2>
         <button
-              onClick={() => navigate("/profile")}
-              className="bg-indigo-500 text-white px-4 py-2 mx-4 rounded-lg"
-            >
-              Go To Profile
-            </button>
+          onClick={() => navigate("/profile")}
+          className="bg-indigo-500 text-white px-4 py-2 mx-4 rounded-lg"
+        >
+          Go To Profile
+        </button>
 
         {/* ACTION BUTTONS */}
         <div className="flex gap-4">
@@ -161,7 +175,7 @@ const Dashboard = () => {
 
         {/* ROADMAP RESULT */}
         {/* <pre>{JSON.stringify(roadmap, null, 2)}</pre> */}
-        {roadmap?.roadmap?.length > 0 && (
+        {(roadmap?.roadmap || []).length > 0 && (
           <div className="bg-white p-5 rounded-lg shadow">
             <h3 className="text-lg font-semibold mb-2">
               Personalized Learning Roadmap
@@ -201,7 +215,7 @@ const Dashboard = () => {
               Skill Level shows topic difficulty. Priority is based on your current skill gaps.
             </p>
 
-            {roadmap.roadmap.map((item, index) => {
+            {(roadmap?.roadmap || []).map((item, index) => {
               const progressItem = user?.progress?.find(
                 (p) => p.topic === item.topic
               );

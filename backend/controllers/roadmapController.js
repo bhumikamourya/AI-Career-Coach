@@ -5,58 +5,13 @@ exports.getRoadmap = async (req, res) => {
   try {
     const user = await User.findById(req.user.id);
 
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
-    }
+    if (!user) return res.status(404).json({ message: "User not found" });
 
-    if (!user.targetRole) {
-      return res.status(400).json({ message: "Target role not set" });
-    }
-    // Run engine (single source of truth)
-    if (!user.roadmap || user.roadmap.length === 0) {
-      await runEngine(user, 0);
-    } 
+   const result = await runEngine(user);
 
-    const roadmap = result.roadmap;
-    const newTopics = roadmap.roadmap.map((item) => item.topic);
-
-    // Progress initialization
-    const isDifferent =
-      !user.progress ||
-      user.progress.length !== newTopics.length ||
-      user.progress.some((p) => !newTopics.includes(p.topic));
-
-    if (isDifferent) {
-      user.progress = newTopics.map((topic) => ({
-        topic,
-        theoryDone: false,
-        practiceDone: false
-      }));
-      await user.save();
-    }
-
-
-    // Remaining days calculation
-    roadmap.roadmap = roadmap.roadmap.map((item) => {
-      const progress = user.progress?.find(
-        (p) => p.topic === item.topic
-      );
-
-      let remainingDays = item.estimatedDays;
-
-      if (progress?.theoryDone) remainingDays -= 0.5;
-      if (progress?.practiceDone) remainingDays -= 0.5;
-
-      if (remainingDays < 0) remainingDays = 0;
-
-      return {
-        ...item,
-        remainingDays
-      };
-    });
-    res.json(roadmap);
+    return res.json(result);
 
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    return res.status(500).json({ message: err.message });
   }
 };

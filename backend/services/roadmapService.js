@@ -1,23 +1,32 @@
-const roadmapData = require("../utils/roadmapData");
+const Role = require("../models/Role");
 
-exports.generateRoadmap = (targetRole, missingSkills, weakSkills = []) => {
-  const baseRoadmap = roadmapData[targetRole] || [];
+
+exports.generateRoadmap = async(targetRole, missingSkills = [], weakSkills = []) => {
+
+   const role = await Role.findOne({
+    name: new RegExp(`^${targetRole}$`, "i")
+  });
+
+  if (!role) return { roadmap: [], totalEstimatedDays: 0 };
 
   let totalEstimatedDays = 0;
 
-  const roadmap = baseRoadmap.map((item) => {
+  const roadmap = role.skills.map((skill) => {
     let status = "Revise";
     let priority = "Low";
 
-    let estimatedDays = item.estimatedDays || 2;
+    let estimatedDays = 3; // base
 
-    let remainingDays = estimatedDays;
+    const skillName = skill.name.toLowerCase();
 
-    if (missingSkills.includes(item.topic)) {
+    const missing = missingSkills.map(s => s.toLowerCase());
+    const weak = weakSkills.map(s => s.toLowerCase());
+
+    if (missing.includes(skillName)) {
       status = "Start Learning";
       priority = "High";
-      estimatedDays += 2;
-    } else if (weakSkills.includes(item.topic)) {
+      estimatedDays += 3;
+    } else if (weak.includes(skillName)) {
       status = "Improve";
       priority = "Medium";
       estimatedDays += 1;
@@ -26,26 +35,23 @@ exports.generateRoadmap = (targetRole, missingSkills, weakSkills = []) => {
     totalEstimatedDays += estimatedDays;
 
     return {
-      ...item,
+       topic: skill.name,
+      level: skill.level,
       status,
       priority,
       estimatedDays,
       remainingDays: estimatedDays,
       resources: [
         {
-          title: `${item.topic} Tutorial`,
-          link: "https://www.youtube.com/results?search_query=" + item.topic
-        },
-        {
-          title: `${item.topic} Practice`,
-          link: "https://www.google.com/search?q=" + item.topic + "+practice"
+          title: `${skill.name} Tutorial`,
+          link: "https://www.youtube.com/results?search_query=" + skill.name
         }
       ]
     };
   });
 
   return {
-    totalEstimatedDays,
-    roadmap
+    roadmap,
+    totalEstimatedDays
   };
 };

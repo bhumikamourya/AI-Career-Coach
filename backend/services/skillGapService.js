@@ -7,7 +7,9 @@ const levelMap = {
 };
 
 exports.getSkillGap = async (userSkills, targetRole) => {
-  const role = await Role.findOne({ name: targetRole });
+  const role = await Role.findOne({
+    name: new RegExp(`^${targetRole}$`, "i")
+  });
 
   if (!role) {
     return {
@@ -18,11 +20,15 @@ exports.getSkillGap = async (userSkills, targetRole) => {
     };
   }
 
-   const required = role.skills;
+  const required = role.skills || [];
 
   const userMap = {};
-  userSkills.forEach((s) => {
-    userMap[s.name.toLowerCase()] = levelMap[s.level];
+
+  (userSkills || []).forEach((s) => {
+    if (!s || !s.name) return;
+
+    userMap[String(s.name).toLowerCase()] =
+      levelMap[s.level] || 1;
   });
 
   const missing = [];
@@ -30,7 +36,8 @@ exports.getSkillGap = async (userSkills, targetRole) => {
   const matched = [];
 
   required.forEach((skill) => {
-    const userLevel = userMap[skill.name.toLowerCase()];
+    const key = String(skill.name).toLowerCase();
+    const userLevel = userMap[key];
 
     if (!userLevel) {
       missing.push(skill.name);
@@ -42,7 +49,7 @@ exports.getSkillGap = async (userSkills, targetRole) => {
   });
 
   return {
-    requiredSkills: required.map((s) => s.name),
+    requiredSkills: required.map(s => s.name),
     matchedSkills: matched,
     missingSkills: missing,
     weakSkills: weak
