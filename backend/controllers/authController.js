@@ -34,6 +34,8 @@ exports.register = async (req, res) => {
         }));
     }
 
+    let roleSkills = [];
+
     if (targetRole) {
   const roleData = await Role.findOne({ name: targetRole });
 

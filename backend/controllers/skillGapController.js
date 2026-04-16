@@ -9,18 +9,20 @@ exports.analyzeSkillGap = async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
 
-    const result = await getSkillGap(user.skills, user.targetRole);
+    const analysis = await getSkillGap(user.skills, user.targetRole,user.roleSkills);
 
-    res.json({
+    return res.json({
       user: {
         name: user.name,
         targetRole: user.targetRole,
         skills: user.skills
       },
-      analysis: result
+      analysis
     });
 
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    return res.status(500).json({
+      message: err.message
+    });
   }
 };

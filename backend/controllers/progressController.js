@@ -2,6 +2,9 @@ const User = require("../models/User");
 
 exports.updateProgress = async (req, res) => {
   try {
+
+    // console.log("BODY RECEIVED:", req.body);
+    // console.log("HEADERS:", req.headers["content-type"]);
     const { topic, type } = req.body;
 
     // VALIDATION
@@ -20,28 +23,36 @@ exports.updateProgress = async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
 
-    if (!user.progress || user.progress.length === 0) {
-      return res.status(400).json({ message: "Progress not initialized" });
-    }
+   user.progress = user.progress || [];
 
     //FIND TOPIC
-    const item = user.progress.find((p) => p.topic === topic);
+    let item = user.progress.find((p) => p.topic === topic);
 
+    // AUTO CREATE IF NOT EXISTS (IMPORTANT FIX)
     if (!item) {
-      return res.status(404).json({ message: "Topic not found" });
+      item = {
+        topic,
+        theoryDone: false,
+        practiceDone: false
+      };
+      user.progress.push(item);
     }
 
     // UPDATE
     let updated = false;
 
-    if (type === "theory" && !item.theoryDone) {
-      item.theoryDone = true;
-      updated = true;
+    if (type === "theory") {
+      if (!item.theoryDone) {
+        item.theoryDone = true;
+        updated = true;
+      }
     }
 
-    if (type === "practice" && !item.practiceDone) {
-      item.practiceDone = true;
-      updated = true;
+    if (type === "practice") {
+      if (!item.practiceDone) {
+        item.practiceDone = true;
+        updated = true;
+      }
     }
 
     if (!updated) {
@@ -49,11 +60,16 @@ exports.updateProgress = async (req, res) => {
     }
 
     await user.save();
-//response
+
+    const { runEngine } = require("../services/engineService");
+    const result = await runEngine(user);
+
     res.json({
       message: "Progress updated",
-      topic,
-      type
+      updatedUser: user,
+      roadmap: result.roadmap,
+      gap: result.gap,
+      totalEstimatedDays: result.totalEstimatedDays
     });
 
   } catch (err) {

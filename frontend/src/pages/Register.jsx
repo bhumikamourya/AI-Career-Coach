@@ -14,6 +14,7 @@ const Register = () => {
     targetRole: "",
     skills: ""
   });
+  const [error, setError] = useState("");
 
   useEffect(() => {
     fetchRoles();
@@ -51,18 +52,26 @@ const Register = () => {
 
     try {
       const res = await registerUser(payload);
-      localStorage.setItem("token", res.data.token);
+
+      localStorage.setItem("token", res.token);
+
       alert("Registered successfully");
-      navigate("/");
+
+      navigate("/profile");
+
 
     } catch (err) {
-      alert(err.response?.data?.message || "Error");
+      const msg = err.response?.data?.message || "Registration failed";
+      setError(msg);
     }
   };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
       <div className="max-w-md w-full bg-white p-8 rounded-xl shadow-lg">
+         {error && (
+  <p className="text-red-500 text-sm text-center">{error}</p>
+)}
         <h2 className="text-2xl font-bold text-center text-gray-800 mb-6">Create Your Account</h2>
 
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -85,7 +94,7 @@ const Register = () => {
             name="password"
             placeholder="Create Password"
             onChange={handleChange}
-            type="Password"
+            type="password"
             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             required
           />

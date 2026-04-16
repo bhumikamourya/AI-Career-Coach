@@ -21,21 +21,16 @@ const Dashboard = () => {
   const [loadingGap, setLoadingGap] = useState(false);
   const [loadingRoadmap, setLoadingRoadmap] = useState(false);
 
+  const [stage, setStage] = useState("loading");
+
   useEffect(() => {
     fetchProfile();
   }, []);
 
-  useEffect(() => {
-    if (user) {
-      handleSkillGap();
-      handleRoadmap();
-    }
-  }, [user]);
-
   const fetchProfile = async () => {
     try {
       const res = await getProfile();
-      setUser(res.data);
+      setUser(res.data.user);
 
       setForm({
         targetRole: res.data.targetRole || "",
@@ -50,6 +45,7 @@ const Dashboard = () => {
 
   const handleSkillGap = async () => {
     try {
+      setStage("analyzing");
       setLoadingGap(true);
       const res = await getSkillGap();
 
@@ -59,6 +55,7 @@ const Dashboard = () => {
         matchedSkills: [],
         requiredSkills: []
       });
+      setStage("gap_done");
     } catch (err) {
       console.error(err);
     } finally {
@@ -78,8 +75,10 @@ const Dashboard = () => {
 
   const percent = total === 0 ? 0 : ((completed / total) * 100).toFixed(0);
 
+
   const handleRoadmap = async () => {
     try {
+      setStage("roadmap_generating");
       setLoadingRoadmap(true);
 
       const res = await getRoadmap();
@@ -88,6 +87,7 @@ const Dashboard = () => {
       setRoadmap(res.data || { roadmap: [], gap: {} });
     } catch (err) {
       console.error(err);
+      setStage("ready");
     } finally {
       setLoadingRoadmap(false);
     }
@@ -115,13 +115,14 @@ const Dashboard = () => {
   };
 
   const markComplete = async (topic, type) => {
+    // console.log("CLICKED:", topic, type);
     try {
-      await markProgress({ topic, type });
-      await fetchProfile();
-
-      await handleSkillGap();
-      await handleRoadmap();
-
+      const res = await markProgress({ topic, type });
+      setUser(res.data.updatedUser);
+      setRoadmap({
+        roadmap: res.data.roadmap,
+        totalEstimatedDays: res.data.totalEstimatedDays
+      });
     } catch (err) {
       console.error(err);
     }
@@ -135,6 +136,19 @@ const Dashboard = () => {
         <h2 className="text-3xl font-bold text-gray-800">
           Career Progress Dashboard
         </h2>
+
+        <div className="bg-white p-4 rounded shadow">
+          <h3 className="font-semibold">AI Career Pipeline</h3>
+
+          <p>Status: {stage}</p>
+
+          {stage === "analyzing" && <p>🔍 AI analyzing your skills...</p>}
+          {stage === "roadmap_generating" && <p>🧠 Generating roadmap...</p>}
+          {stage === "ready" && <p>✅ Ready to start learning</p>}
+        </div>
+
+
+        {/* PROFILE BUTTON  */}
         <button
           onClick={() => navigate("/profile")}
           className="bg-indigo-500 text-white px-4 py-2 mx-4 rounded-lg"
@@ -315,7 +329,7 @@ const Dashboard = () => {
           onClick={handleStartPractice}
           className="flex-1 bg-orange-500 text-white px-4 py-2 rounded-lg"
         >
-          Start Interview Practice
+          Start Mock Test
         </button>
 
       </div>
@@ -331,6 +345,38 @@ const Dashboard = () => {
 
 
   );
+
+
+  //   return (
+  //   <div className="min-h-screen bg-gray-100 p-6">
+  //     <div className="max-w-5xl mx-auto space-y-6">
+
+  //       <h2 className="text-3xl font-bold">Career Dashboard</h2>
+
+  //       <PipelineStatus stage={stage} />
+
+  //       <div className="flex gap-4">
+  //         <button onClick={handleSkillGap} className="btn-green">
+  //           {loadingGap ? "Analyzing..." : "Analyze Skill Gap"}
+  //         </button>
+
+  //         <button onClick={handleRoadmap} className="btn-purple">
+  //           {loadingRoadmap ? "Generating..." : "Generate Roadmap"}
+  //         </button>
+  //       </div>
+
+  //       <SkillGapCard analysis={analysis} />
+
+  //       <RoadmapCard 
+  //         roadmap={roadmap}
+  //         user={user}
+  //         percent={percent}
+  //         markComplete={markComplete}
+  //       />
+
+  //     </div>
+  //   </div>
+  // );
 };
 
 export default Dashboard;

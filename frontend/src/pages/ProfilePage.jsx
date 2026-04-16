@@ -23,7 +23,7 @@ const ProfilePage = () => {
     const fetchProfile = async () => {
         try {
             const res = await getProfile();
-            setUser(res.data);
+            setUser(res.data.user);
 
             setForm({
                 targetRole: res.data.targetRole || ""
@@ -50,11 +50,11 @@ const ProfilePage = () => {
         try {
             const payload = {
                 targetRole: form.targetRole,
-                skills: user.skills
+                skills: user.skills || []
             };
 
             const res = await updateProfile(payload);
-            setUser(res.data);
+            setUser(res.data.user);
 
             alert("Profile updated");
         } catch (err) {
@@ -107,7 +107,7 @@ const ProfilePage = () => {
                         onClick={() => navigate("/")}
                         className="bg-indigo-700 text-white px-4 py-2 mx-4 rounded-lg"
                     >
-                        Go To Dashboard
+                        View Dashboard
                     </button>
                 </div>
 
@@ -156,9 +156,7 @@ const ProfilePage = () => {
                     </div>
 
 
-                    <p className="font-semibold mt-4">
-                        System Evaluation (AI Analysis)
-                    </p>
+                    <h3 className="font-semibold mb-2">AI Insights</h3>
                     <div className="flex flex-wrap gap-2">
                         {user.evaluatedSkills?.length > 0 ? (
                             user.evaluatedSkills.map((skill, i) => (
@@ -170,7 +168,9 @@ const ProfilePage = () => {
                                 </span>
                             ))
                         ) : (
-                            <p>No evaluation yet</p>
+                            <p className="text-gray-500">
+                                Take a test to generate AI skill evaluation
+                            </p>
                         )}
                     </div>
                 </div>

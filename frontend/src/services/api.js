@@ -15,7 +15,11 @@ API.interceptors.request.use((req) => {
   return req;
 });
 
-export const registerUser = (data) => API.post("/auth/register", data);
+export const registerUser = async (data) => {
+  const res = await API.post("/auth/register", data);
+  return res.data;
+};
+
 export const loginUser = (data) => API.post("/auth/login", data);
 export const updatePassword = (data) =>API.put("/user/update-password", data);
 
@@ -35,6 +39,8 @@ export const getResume = () => API.get("/resume-builder");
 
 export const getQuestions = () => API.get("/practice");
 export const submitAnswers = (data) => API.post("/practice/submit", data);
+export const saveAnswer = (data) => API.post("/practice/save", data);
+
 export const markProgress = (data) => API.post("/progress/complete", data);
 
 

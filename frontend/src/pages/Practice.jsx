@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import { getQuestions, submitAnswers } from "../services/api";
+import { useEffect, useState, useRef } from "react";
+import { getQuestions, submitAnswers, saveAnswer } from "../services/api";
 import { useNavigate } from "react-router-dom";
 
 const Practice = () => {
@@ -10,6 +10,7 @@ const Practice = () => {
   const [submitting, setSubmitting] = useState(false); //  NEW
   const [blocked, setBlocked] = useState(null);
 
+  const saveTimeout = useRef(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -19,7 +20,15 @@ const Practice = () => {
   const fetchQuestions = async () => {
     try {
       const res = await getQuestions();
-      setQuestions(res.data);
+
+      setQuestions(res.data.questions);
+      setIndex(res.data.currentIndex || 0);
+      const formatted = {};
+      (res.data.answers || []).forEach(a => {
+        formatted[a.questionId] = a.selected;
+      });
+      setSelectedAnswers(formatted);
+
     } catch (err) {
       if (err.response?.status === 403) {
         setBlocked(err.response.data);
@@ -32,12 +41,17 @@ const Practice = () => {
 
   const current = questions[index];
 
-  // STORE ANSWER
   const handleOptionClick = (questionId, option) => {
-    setSelectedAnswers((prev) => ({
+    setSelectedAnswers(prev => ({
       ...prev,
       [questionId]: option
     }));
+
+    clearTimeout(saveTimeout.current);
+
+    saveTimeout.current = setTimeout(() => {
+      saveAnswer({ questionId, selected: option });
+    }, 300);
   };
 
   // NEXT BUTTON
@@ -51,23 +65,9 @@ const Practice = () => {
   const handleSubmit = async () => {
     if (submitting) return; //  prevent double click
 
-    //  force complete test
-    if (Object.keys(selectedAnswers).length < questions.length) {
-      alert("Please answer all questions");
-      return;
-    }
-
     try {
       setSubmitting(true);
-
-      const payload = {
-        answers: Object.keys(selectedAnswers).map((qId) => ({
-          questionId: qId,
-          selected: selectedAnswers[qId]
-        }))
-      };
-
-      const res = await submitAnswers(payload);
+      const res = await submitAnswers();
       setResult(res.data);
 
     } catch (err) {
@@ -192,8 +192,8 @@ const Practice = () => {
         <div className="bg-purple-100 p-4 rounded mb-4">
           <h3 className="font-semibold mb-2">Updated Roadmap</h3>
 
-          {result.updatedRoadmap?.roadmap?.length ? (
-            result.updatedRoadmap.roadmap.slice(0, 5).map((item, i) => (
+          {(result.updatedRoadmap || []).length > 0 ? (
+            result.updatedRoadmap.slice(0, 5).map((item, i) => (
               <p key={i}>
                 {item.topic} → {item.status} ({item.priority})
               </p>
@@ -242,11 +242,11 @@ const Practice = () => {
   return (
     <div className="p-6 max-w-xl mx-auto">
       <div className="w-full bg-gray-200 h-2 rounded mb-4">
-            <div
-              className="bg-blue-500 h-2 rounded"
-              style={{ width: `${((index + 1) / questions.length) * 100}%` }}
-            ></div>
-          </div>
+        <div
+          className="bg-blue-500 h-2 rounded"
+          style={{ width: `${((index + 1) / questions.length) * 100}%` }}
+        ></div>
+      </div>
       <h2 className="text-xl font-bold mb-4">
         Question {index + 1} / {questions.length}
       </h2>

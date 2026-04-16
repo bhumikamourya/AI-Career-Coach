@@ -17,7 +17,7 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: true
     },
-    skills: {
+    skills: { //user input
       type: [
         {
           name: {
@@ -39,7 +39,7 @@ const userSchema = new mongoose.Schema(
       ],
       default: []
     },
-    evaluatedSkills: [
+    evaluatedSkills: [ //system/test based
       {
         name: String,
         level: String, // system calculated
@@ -61,7 +61,6 @@ const userSchema = new mongoose.Schema(
     targetRole: {
       type: String,
       default: ""
-      // enum: ["Frontend Developer", "Backend Developer", "Full Stack Developer"]
     },
     isProfileComplete: {
       type: Boolean,
@@ -92,13 +91,6 @@ const userSchema = new mongoose.Schema(
       enum: ["upload", "builder"],
       default: null
     },
-    roleSkills: [
-  {
-    name: String,
-    level: String,
-    weight: Number
-  }
-],
   },
 
   { timestamps: true }

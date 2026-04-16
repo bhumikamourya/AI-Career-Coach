@@ -9,7 +9,7 @@ const ResumeUpload = () => {
   const [extractedSkills, setExtractedSkills] = useState([]);
 
   const navigate = useNavigate();
-  
+
 
   const handleFileChange = (e) => {
     setFile(e.target.files[0]);
@@ -30,11 +30,15 @@ const ResumeUpload = () => {
 
       setText(res.data.text);
       setExtractedSkills(res.data.extractedSkills);
-      alert("Resume Uploaded");
 
+      localStorage.setItem("gap", JSON.stringify(res.data.gap));
+      localStorage.setItem("roadmap", JSON.stringify(res.data.roadmap));
 
-      console.log("GAP:", res.data.gap);
-      console.log("ROADMAP:", res.data.roadmap);
+      alert("Resume Uploaded & Analyzed");
+
+      navigate("/");
+      // console.log("GAP:", res.data.gap);
+      // console.log("ROADMAP:", res.data.roadmap);
     } catch (err) {
       console.error(err);
       alert("Upload failed");
@@ -45,15 +49,15 @@ const ResumeUpload = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-6">
-      
+
       <div className="bg-white p-6 rounded-lg shadow w-full max-w-xl space-y-4">
 
         <button
-                        onClick={() => navigate("/profile")}
-                        className="bg-indigo-700 text-white px-4 py-2 mx-4 rounded-lg"
-                    >
-                        See Profile
-                    </button>
+          onClick={() => navigate("/profile")}
+          className="bg-indigo-700 text-white px-4 py-2 mx-4 rounded-lg"
+        >
+          See Profile
+        </button>
 
         <h2 className="text-2xl font-bold text-gray-800">
           Upload Resume

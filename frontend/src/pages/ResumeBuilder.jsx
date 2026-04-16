@@ -28,25 +28,31 @@ const ResumeBuilder = () => {
       setSource(res.data.source);
 
       setForm({
-        name: data.name || "",
-        email: data.email || "",
-        education: data.education || "",
-        skills: Array.isArray(data.skills)
-          ? data.skills.join(", ")
-          : data.skills || "",
-        experience: data.experience || "",
-        projects: Array.isArray(data.projects)
-          ? data.projects
-            .map(p => {
-              let line = p.title;
-              if (p.description) {
-                line += " - " + p.description;
-              }
-              return line;
-            })
-            .join("\n")
-          : data.projects || ""
-      });
+  name: data.name || "",
+  email: data.email || "",
+
+  education: Array.isArray(data.education)
+    ? data.education[0]?.college || ""
+    : data.education || "",
+
+  skills: Array.isArray(data.skills)
+    ? data.skills.join(", ")
+    : data.skills || "",
+
+  experience: data.experience || "",
+
+  projects: Array.isArray(data.projects)
+    ? data.projects
+        .map(p => {
+          let line = p.title || "";
+          if (p.description) {
+            line += " - " + p.description;
+          }
+          return line;
+        })
+        .join("\n")
+    : data.projects || ""
+});
     } catch (err) {
       console.error(err);
     }

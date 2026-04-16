@@ -2,18 +2,32 @@ const Question = require("../models/Question");
 const Result = require("../models/Result");
 const User = require("../models/User");
 const { getSkillGap } = require("../services/skillGapService");
-// const { generateRoadmap } = require("../services/roadmapService");
-// const { calculateReadiness } = require("../services/readinessService");
+const { generateRoadmap } = require("../services/roadmapService");
+const { calculateReadiness } = require("../services/readinessService");
 const { getRecommendations } = require("../services/recommendationService");
 
 const { runEngine } = require("../services/engineService");
 const Role = require("../models/Role");
+const TestSession = require("../models/TestSession");
 
 //  GET QUESTIONS
 exports.getQuestions = async (req, res) => {
   try {
-    const user = await User.findById(req.user.id);
 
+    const userId = req.user.id;
+
+    // STEP 1: Check if active session already exists
+    let existingSession = await TestSession.findOne({
+      userId,
+      isCompleted: false
+    });
+
+    if (existingSession) {
+      // Return same questions (NO RANDOM AGAIN)
+      return res.json(existingSession);
+    }
+    //STEP 2 Fetch user + role
+    const user = await User.findById(userId);
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
@@ -27,10 +41,13 @@ exports.getQuestions = async (req, res) => {
       return res.status(400).json({ message: "Role not configured" });
     }
 
-    // CHECK PROGRESS
-    const total = user.progress.length;
+    //STEP 3: Progress check (same as your logic)
+    const total = user.progress.length * 2;
 
-    const completed = user.progress.filter((p) => p.theoryDone && p.practiceDone).length;
+    const completed = user.progress.reduce((acc, p) => {
+      return acc + (p.theoryDone ? 1 : 0) + (p.practiceDone ? 1 : 0);
+    }, 0);
+
     const percentage = total === 0 ? 0 : (completed / total) * 100;
 
     if (percentage < 70) {
@@ -39,13 +56,14 @@ exports.getQuestions = async (req, res) => {
         progress: percentage.toFixed(0)
       });
     }
-
+    //STEP 4: Generate questions 
     let questions = [];
 
     // DYNAMIC QUESTION GENERATION
     for (let skill of role.skills) {
-      const count = skill.weight >= 4 ? 4 : 2; // dynamic
-      const skillQuestions = await Question.aggregate([
+      const count = Math.ceil(skill.weight * 1.5);
+      // PRIMARY FILTER → topic + role
+      let skillQuestions = await Question.aggregate([
         {
           $match: {
             topic: skill.name,
@@ -55,16 +73,34 @@ exports.getQuestions = async (req, res) => {
         { $sample: { size: count } } // 2 per skill
       ]);
 
+      //  FALLBACK (ONLY topic)
+      if (skillQuestions.length === 0) {
+        skillQuestions = await Question.aggregate([
+          {
+            $match: {
+              topic: skill.name
+            }
+          },
+          { $sample: { size: count } }
+        ]);
+      }
       questions.push(...skillQuestions);
     }
 
-    // LIMIT TOTAL QUESTIONS
-    questions = questions.slice(0, 25);
+    // LIMIT + SHUFFLE
+    questions = questions
+      .sort(() => Math.random() - 0.5)
+      .slice(0, 25);
 
-    // SHUFFLE
-    questions.sort(() => Math.random() - 0.5);
+    // STEP 5: CREATE SESSION (MOST IMPORTANT)
+    const newSession = await TestSession.create({
+      userId,
+      questions,
+      answers: [],
+      currentIndex: 0
+    });
 
-    res.json(questions);
+    res.json(newSession);
 
   } catch (err) {
     console.error("GET QUESTIONS ERROR:", err);
@@ -72,28 +108,80 @@ exports.getQuestions = async (req, res) => {
   }
 };
 
+
+exports.saveAnswer = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { questionId, selected } = req.body;
+
+    // find active session
+    const session = await TestSession.findOne({
+      userId,
+      isCompleted: false
+    }).sort({ createdAt: -1 });
+
+    if (!session) {
+      return res.status(404).json({ message: "No active session found" });
+    }
+
+    // IMPORTANT FIX: correct comparison
+    const existing = session.answers.find(
+      (a) => a.questionId.toString() === questionId.toString()
+    );
+
+    if (existing) {
+      existing.selected = selected;
+    } else {
+      session.answers.push({
+        questionId: questionId.toString(),
+        selected
+      });
+    }
+
+    await session.save();
+
+    return res.json({
+      message: "Answer saved successfully",
+      answersCount: session.answers.length
+    });
+
+  } catch (err) {
+    console.error("SAVE ANSWER ERROR:", err);
+    res.status(500).json({ message: err.message });
+  }
+};
+
 // SUBMIT ANSWERS
 exports.submitAnswers = async (req, res) => {
   try {
-    const { answers } = req.body;
+    const userId = req.user.id ;
 
-    if (!answers || answers.length === 0) {
-      return res.status(400).json({ message: "No answers submitted" });
-    }
+ const session = await TestSession.findOne({
+  userId,
+  isCompleted: false
+}).sort({ createdAt: -1 });
 
-    const user = await User.findById(req.user.id);
+if (!session) {
+  return res.status(400).json({ message: "No active test session" });
+}
 
+    const answers = session.answers || [];
+
+      if (answers.length === 0) {
+      return res.status(400).json({
+        message: "No answers submitted"
+      });
+      }
+
+    const user = await User.findById(userId);
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
-
-    // fetch role once
-    const role = await Role.findOne({ name: user.targetRole });
-    if (!role) {
+        const role = await Role.findOne({ name: user.targetRole });
+          if (!role) {
       return res.status(400).json({ message: "Invalid role" });
     }
 
-    // get all question ids
     const questionIds = answers.map(a => a.questionId);
 
     // fetch all questions at once
@@ -113,10 +201,13 @@ exports.submitAnswers = async (req, res) => {
     const detailed = [];
     const topicStats = {};
 
-    for (let ans of answers) {
+    for (const ans of answers) {
       const q = questionMap[ans.questionId];
 
-      if (!q || !ans.selected) continue;
+      if (!q) continue;
+      const isCorrect =
+        q.answer.trim().toLowerCase() ===
+        ans.selected.trim().toLowerCase();
 
       const skill = role.skills.find(
         s => s.name.toLowerCase() === q.topic.toLowerCase()
@@ -125,10 +216,6 @@ exports.submitAnswers = async (req, res) => {
       const weight = skill?.weight || 1;
 
       totalWeight += weight;
-
-      const isCorrect =
-        q.answer.trim().toLowerCase() ===
-        ans.selected.trim().toLowerCase();
 
       if (isCorrect) {
         correct++;
@@ -181,7 +268,11 @@ exports.submitAnswers = async (req, res) => {
 
     await user.save();
 
-    const percentage = Math.round((scoreWeight / totalWeight) * 100); console.log("Percentage:", percentage);
+    const percentage =
+      totalWeight === 0
+        ? 0
+        : Math.round((scoreWeight / totalWeight) * 100);
+    console.log("Percentage:", percentage);
 
     const engineResult = await runEngine(user, percentage);
 
@@ -193,12 +284,19 @@ exports.submitAnswers = async (req, res) => {
     const recommendations = getRecommendations(engineResult.gap);
     // Save result
     await Result.create({
-      userId: user._id,
+      userId,
       score: scoreWeight,
       total: totalWeight,
       percentage,
       answers: detailed
     });
+
+
+    // Mark session completed
+    await TestSession.findByIdAndUpdate(session._id, {
+      isCompleted: true
+    });
+
 
     // FINAL RESPONSE
     res.json({
@@ -211,7 +309,7 @@ exports.submitAnswers = async (req, res) => {
       answers: detailed,
       evaluatedSkills: user.evaluatedSkills,
       updatedGap: engineResult.gap,
-      updatedRoadmap: engineResult.roadmap,
+      updatedRoadmap: engineResult.roadmap?.roadmap || [],
       readinessScore: engineResult.readinessScore,
       recommendations
     });
