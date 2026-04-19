@@ -6,12 +6,11 @@ const {
   getProfile,
   updateProfile,
   deleteSkill,
-  updatePassword
+  getDashboardData
 } = require("../controllers/userController");
 
 router.get("/profile", protect, getProfile);
 router.put("/profile", protect, updateProfile);
 router.delete("/skill/:name", protect, deleteSkill);
-// router.put("/update-password", protect, updatePassword);
-
+router.get("/dashboard", protect, getDashboardData);
 module.exports = router;

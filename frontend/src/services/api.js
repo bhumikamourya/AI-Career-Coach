@@ -26,8 +26,8 @@ export const updatePassword = (data) =>API.put("/user/update-password", data);
 export const getRoles = () => API.get("/roles");
 export const getProfile = () => API.get("/user/profile");
 export const updateProfile = (data) => API.put("/user/profile", data);
-export const getSkillGap = () => API.get("/skill-gap");
-export const getRoadmap = () => API.get("/roadmap");
+// export const getSkillGap = () => API.get("/skill-gap");
+// export const getRoadmap = () => API.get("/roadmap");
 export const uploadResume = (formData) =>
   API.post("/resume", formData, {
     headers: {
@@ -42,6 +42,9 @@ export const submitAnswers = (data) => API.post("/practice/submit", data);
 export const saveAnswer = (data) => API.post("/practice/save", data);
 
 export const markProgress = (data) => API.post("/progress/complete", data);
+
+export const getDashboardData = () => API.get("/user/dashboard");
+
 
 
 API.interceptors.response.use(

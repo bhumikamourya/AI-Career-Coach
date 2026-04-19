@@ -69,7 +69,8 @@ exports.updateProgress = async (req, res) => {
       updatedUser: user,
       roadmap: result.roadmap,
       gap: result.gap,
-      totalEstimatedDays: result.totalEstimatedDays
+      totalEstimatedDays: result.totalEstimatedDays,
+       currentPhase: user.currentPhase 
     });
 
   } catch (err) {

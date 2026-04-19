@@ -39,12 +39,12 @@ exports.updateUserProfile = async (userId, data) => {
       source: "manual"
     }));
 
-    user.evaluatedSkills = [];
-
     isChanged = true;
   }
 
   user.isProfileComplete = user.calculateProfileCompletion();
+      console.log("PROFILE COMPLETE:", user.calculateProfileCompletion());
+
 
   await user.save();
 

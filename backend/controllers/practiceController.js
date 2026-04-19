@@ -41,21 +41,17 @@ exports.getQuestions = async (req, res) => {
       return res.status(400).json({ message: "Role not configured" });
     }
 
-    //STEP 3: Progress check (same as your logic)
-    const total = user.progress.length * 2;
+    await runEngine(user);
 
-    const completed = user.progress.reduce((acc, p) => {
-      return acc + (p.theoryDone ? 1 : 0) + (p.practiceDone ? 1 : 0);
-    }, 0);
-
-    const percentage = total === 0 ? 0 : (completed / total) * 100;
-
-    if (percentage < 70) {
+    // STEP 3: PHASE CHECK (ONLY SOURCE OF TRUTH)
+    if (user.currentPhase !== "TEST" && user.currentPhase !== "INTERVIEW_READY") {
       return res.status(403).json({
-        message: "Complete at least 70% of roadmap before taking test",
-        progress: percentage.toFixed(0)
+        message: "You are not eligible for test yet",
+        phase: user.currentPhase
       });
     }
+
+
     //STEP 4: Generate questions 
     let questions = [];
 
@@ -154,31 +150,31 @@ exports.saveAnswer = async (req, res) => {
 // SUBMIT ANSWERS
 exports.submitAnswers = async (req, res) => {
   try {
-    const userId = req.user.id ;
+    const userId = req.user.id;
 
- const session = await TestSession.findOne({
-  userId,
-  isCompleted: false
-}).sort({ createdAt: -1 });
+    const session = await TestSession.findOne({
+      userId,
+      isCompleted: false
+    }).sort({ createdAt: -1 });
 
-if (!session) {
-  return res.status(400).json({ message: "No active test session" });
-}
+    if (!session) {
+      return res.status(400).json({ message: "No active test session" });
+    }
 
     const answers = session.answers || [];
 
-      if (answers.length === 0) {
+    if (answers.length === 0) {
       return res.status(400).json({
         message: "No answers submitted"
       });
-      }
+    }
 
     const user = await User.findById(userId);
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
-        const role = await Role.findOne({ name: user.targetRole });
-          if (!role) {
+    const role = await Role.findOne({ name: user.targetRole });
+    if (!role) {
       return res.status(400).json({ message: "Invalid role" });
     }
 
@@ -266,20 +262,34 @@ if (!session) {
       }
     });
 
-    await user.save();
-
     const percentage =
       totalWeight === 0
         ? 0
         : Math.round((scoreWeight / totalWeight) * 100);
     console.log("Percentage:", percentage);
 
+
+    // RUN ENGINE with testScore
     const engineResult = await runEngine(user, percentage);
+
+    // SMART UPDATE PROGRESS BASED ON WEAK SKILLS
+    const weakSet = new Set(engineResult.gap.weakSkills.map(s => s.toLowerCase()));
+
+    user.progress = user.progress.map(p => {
+      const isWeak = weakSet.has(p.topic.toLowerCase());
+
+      return {
+        ...p._doc,
+        theoryDone: p.theoryDone, // keep theory
+        practiceDone: isWeak ? false : p.practiceDone // reset only weak practice
+      };
+    });
 
     // use engine output only
     const updatedGap = engineResult.gap;
     const updatedRoadmap = engineResult.roadmap;
     const readinessScore = engineResult.readinessScore;
+
 
     const recommendations = getRecommendations(engineResult.gap);
     // Save result
@@ -309,9 +319,12 @@ if (!session) {
       answers: detailed,
       evaluatedSkills: user.evaluatedSkills,
       updatedGap: engineResult.gap,
-      updatedRoadmap: engineResult.roadmap?.roadmap || [],
+      updatedRoadmap: engineResult.roadmap?.roadmap || engineResult.roadmap || [],
       readinessScore: engineResult.readinessScore,
-      recommendations
+      currentPhase: user.currentPhase,
+      recommendations,
+      attempts: user.attempts || [],
+
     });
 
   } catch (err) {

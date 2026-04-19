@@ -9,9 +9,9 @@ const userSchema = new mongoose.Schema(
     email: {
       type: String,
       required: true,
-       lowercase: true,
+      lowercase: true,
       unique: true,
-       trim: true
+      trim: true
     },
     password: {
       type: String,
@@ -30,7 +30,7 @@ const userSchema = new mongoose.Schema(
             enum: ["Beginner", "Intermediate", "Advanced"],
             default: "Beginner"
           },
-          source:{
+          source: {
             type: String,
             enum: ["manual", "resume"],
             default: "manual"
@@ -70,7 +70,7 @@ const userSchema = new mongoose.Schema(
       type: Number,
       default: 0
     },
-// USER-FACING DATA (derived / merged)
+    // USER-FACING DATA (derived / merged)
     education: [
       {
         college: String,
@@ -91,16 +91,26 @@ const userSchema = new mongoose.Schema(
       enum: ["upload", "builder"],
       default: null
     },
+    // CORE SYSTEM STATE
+    currentPhase: {
+      type: String,
+      enum: [
+        "PROFILE_SETUP",
+        "SKILL_ANALYSIS",
+        "ROADMAP",
+        "PRACTICE",
+        "TEST",
+        "INTERVIEW_READY"
+      ],
+      default: "PROFILE_SETUP"
+    }
   },
 
   { timestamps: true }
 );
 //  PROFILE COMPLETION LOGIC
 userSchema.methods.calculateProfileCompletion = function () {
-  return (
-    this.targetRole &&
-    this.skills.length > 0
-  );
+  return !!(this.targetRole && this.skills && this.skills.length > 0);
 };
 
 module.exports = mongoose.model("User", userSchema);
