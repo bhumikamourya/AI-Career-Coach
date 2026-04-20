@@ -81,22 +81,9 @@ const Practice = () => {
   if (blocked) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="bg-white shadow-lg rounded-xl p-6 text-center border">
-          <h2 className="text-xl font-semibold text-red-600 mb-2">
-            Access Restricted
-          </h2>
-          <p className="text-gray-600 mb-3">{blocked.message}</p>
-          <p className="text-sm mb-4">
-            Progress: <b>{blocked.progress}%</b>
-          </p>
-
-          <button
-            onClick={() => navigate("/"), window.location.reload()} 
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-          >
-            Go Back
-          </button>
-        </div>
+        <p className="text-sm mb-4">
+          Current Phase: <b>{blocked.phase}</b>
+        </p>
       </div>
     );
   }

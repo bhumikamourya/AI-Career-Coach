@@ -2,7 +2,7 @@ const fs = require("fs");
 const pdfParse = require("pdf-parse");
 const mammoth = require("mammoth");
 
-const { extractSkills } = require("./skillExtractionService");
+const { extractSkills } = require("./skills/skillExtractionService");
 const { extractEducation, extractProjects } = require("./resumeParserService");
 
 const User = require("../models/User");
@@ -85,6 +85,9 @@ exports.processResumeUpload = async (userId, file) => {
 
   user.resumeType = "upload";
   user.resumeUrl = filePath;
+
+//for profile updation/completion
+  user.isProfileComplete = user.calculateProfileCompletion();
 
   // ENGINE RUN 
   const result = await runEngine(user);

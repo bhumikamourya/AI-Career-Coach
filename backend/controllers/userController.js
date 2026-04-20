@@ -20,6 +20,8 @@ exports.updateProfile = async (req, res) => {
       req.user.id,
       req.body
     );
+    console.log(" PROFILE UPDATE INPUT:", req.body);
+console.log(" BEFORE ENGINE USER:", user);
 
     const result = await runEngine(user);
 
@@ -50,25 +52,12 @@ exports.deleteSkill = async (req, res) => {
 
 exports.getDashboardData = async (req, res) => {
   try {
-    const userId = req.user.id;
-
-    let user = await User.findById(userId).select(
-      "roadmap skillGap readinessScore evaluatedSkills progress targetRole currentPhase attempts"
+    const user = await User.findById(req.user.id).select(
+      "roadmap skillGap readinessScore evaluatedSkills progress currentPhase attempts"
     );
 
     if (!user) {
       return res.status(404).json({ message: "User not found" });
-    }
-
-    //  Only run engine if data missing
-    if (!user.roadmap || user.roadmap.length === 0) {
-      const engineResult = await runEngine(user, 0);
-
-      user.roadmap = engineResult.roadmap;
-      user.skillGap = engineResult.gap;
-      user.readinessScore = engineResult.readinessScore;
-
-      await user.save();
     }
 
     res.json({
@@ -78,7 +67,7 @@ exports.getDashboardData = async (req, res) => {
       evaluatedSkills: user.evaluatedSkills || [],
       progress: user.progress || [],
       currentPhase: user.currentPhase,
-      attempts: user.attempts || [],
+      attempts: user.attempts || []
     });
 
   } catch (err) {
@@ -86,31 +75,3 @@ exports.getDashboardData = async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 };
-
-
-// exports.getDashboardData = async (req, res) => {
-//   try {
-//     const userId = req.user.id;
-
-//     const user = await User.findById(userId).select(
-//       "roadmap skillGap readinessScore evaluatedSkills progress currentPhase"
-//     );
-
-//     if (!user) {
-//       return res.status(404).json({ message: "User not found" });
-//     }
-
-//     res.json({
-//       roadmap: user.roadmap || [],
-//       skillGap: user.skillGap || {},
-//       readinessScore: user.readinessScore || 0,
-//       evaluatedSkills: user.evaluatedSkills || [],
-//       progress: user.progress || [],
-//       currentPhase: user.currentPhase
-//     });
-
-//   } catch (err) {
-//     console.error("DASHBOARD ERROR:", err);
-//     res.status(500).json({ message: err.message });
-//   }
-// };

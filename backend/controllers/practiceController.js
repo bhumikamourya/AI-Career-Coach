@@ -1,8 +1,8 @@
 const Question = require("../models/Question");
 const Result = require("../models/Result");
 const User = require("../models/User");
-const { getSkillGap } = require("../services/skillGapService");
-const { generateRoadmap } = require("../services/roadmapService");
+const { getSkillGap } = require("../services/skills/skillGapService");
+const { generateRoadmap } = require("../services/roadmap/roadmapService");
 const { calculateReadiness } = require("../services/readinessService");
 const { getRecommendations } = require("../services/recommendationService");
 
@@ -269,21 +269,42 @@ exports.submitAnswers = async (req, res) => {
     console.log("Percentage:", percentage);
 
 
-    // RUN ENGINE with testScore
-    const engineResult = await runEngine(user, percentage);
+    // SAVE ATTEMPT
+    if (!user.attempts) user.attempts = [];
 
-    // SMART UPDATE PROGRESS BASED ON WEAK SKILLS
-    const weakSet = new Set(engineResult.gap.weakSkills.map(s => s.toLowerCase()));
+    user.attempts.push({
+      percentage,
+      date: new Date()
+    });
 
+    // keep only last 5 attempts
+    if (user.attempts.length > 5) {
+      user.attempts = user.attempts.slice(-5);
+    }
+
+
+    // STEP: TEMP GAP (for weak detection BEFORE engine)
+    const tempGap = await getSkillGap(
+      user.skills,
+      user.targetRole
+    );
+
+    const weakSet = new Set(
+      tempGap.weakSkills.map(s => s.toLowerCase())
+    );
+
+    // UPDATE PROGRESS BEFORE ENGINE
     user.progress = user.progress.map(p => {
       const isWeak = weakSet.has(p.topic.toLowerCase());
 
       return {
         ...p._doc,
-        theoryDone: p.theoryDone, // keep theory
-        practiceDone: isWeak ? false : p.practiceDone // reset only weak practice
+        theoryDone: p.theoryDone,
+        practiceDone: isWeak ? false : p.practiceDone
       };
     });
+
+    const engineResult = await runEngine(user, percentage);
 
     // use engine output only
     const updatedGap = engineResult.gap;
@@ -298,7 +319,12 @@ exports.submitAnswers = async (req, res) => {
       score: scoreWeight,
       total: totalWeight,
       percentage,
-      answers: detailed
+      answers: detailed,
+
+
+      topicStats,
+  weakSkillsSnapshot: engineResult.gap.weakSkills,
+  readinessScore: engineResult.readinessScore
     });
 
 
@@ -329,6 +355,22 @@ exports.submitAnswers = async (req, res) => {
 
   } catch (err) {
     console.error("SUBMIT ERROR:", err);
+    res.status(500).json({ message: err.message });
+  }
+};
+
+
+
+exports.getUserTestResults = async (req, res) => {
+  try {
+    const userId = req.user.id;
+
+    const results = await Result.find({ userId })
+      .sort({ createdAt: -1 });
+
+    res.json(results);
+
+  } catch (err) {
     res.status(500).json({ message: err.message });
   }
 };

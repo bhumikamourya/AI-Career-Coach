@@ -1,4 +1,4 @@
-const Role = require("../models/Role");
+const Role = require("../../models/Role");
 
 exports.generateRoadmap = async (targetRole, missingSkills = [], weakSkills = []) => {
   const role = await Role.findOne({
@@ -12,34 +12,25 @@ exports.generateRoadmap = async (targetRole, missingSkills = [], weakSkills = []
   const missingSet = new Set((missingSkills || []).map(s => s.toLowerCase()));
   const weakSet = new Set((weakSkills || []).map(s => s.toLowerCase()));
 
-  let totalEstimatedDays = 0;
-
   const roadmap = role.skills.map((skill) => {
     const skillName = skill.name.toLowerCase();
 
     let status = "Revise";
     let priority = "Low";
-    let estimatedDays = 3;
 
     if (missingSet.has(skillName)) {
       status = "Start Learning";
       priority = "High";
-      estimatedDays += 3;
     } else if (weakSet.has(skillName)) {
       status = "Improve";
       priority = "Medium";
-      estimatedDays += 1;
     }
-
-    totalEstimatedDays += estimatedDays;
 
     return {
       topic: skill.name,
       level: skill.level,
       status,
       priority,
-      estimatedDays,
-      remainingDays: estimatedDays,
       resources: [
         {
           title: `${skill.name} Tutorial`,
@@ -50,7 +41,6 @@ exports.generateRoadmap = async (targetRole, missingSkills = [], weakSkills = []
   });
 
   return {
-    roadmap,
-    totalEstimatedDays
-  };
+    roadmap
+    };
 };

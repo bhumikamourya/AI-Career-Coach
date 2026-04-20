@@ -1,5 +1,5 @@
-const skillDictionary = require("../utils/skillDictionary");
-const Role = require("../models/Role");
+const skillDictionary = require("../../utils/skillDictionary");
+const Role = require("../../models/Role");
 
 const normalizeText = (text) => String(text || "").toLowerCase();
 
@@ -21,7 +21,7 @@ exports.extractSkills = async (text, targetRole) => {
 
   let roleSkills = [];
 
-  // 🔥 1. FETCH ROLE FROM DB
+  //  1. FETCH ROLE FROM DB
   if (targetRole) {
     const role = await Role.findOne({ name: targetRole });
 
@@ -33,15 +33,15 @@ exports.extractSkills = async (text, targetRole) => {
     }
   }
 
-  // 🔥 2. ROLE-BASED MATCHING
+  //  2. ROLE-BASED MATCHING
 const matchedRoleSkills = roleSkills.filter(skill =>
   new RegExp(`\\b${skill}\\b`, "i").test(lowerText)
 );
 
-  // 🔥 3. DICTIONARY MATCHING (fallback + aliases)
+  //  3. DICTIONARY MATCHING (fallback + aliases)
   const dictionarySkills = matchFromDictionary(lowerText);
 
-  // 🔥 4. MERGE + REMOVE DUPLICATES
+  //  4. MERGE + REMOVE DUPLICATES
 const finalSkills = [...new Set([
   ...matchedRoleSkills,
   ...dictionarySkills

@@ -70,6 +70,8 @@ const userSchema = new mongoose.Schema(
       type: Number,
       default: 0
     },
+    roadmap: { type: Array, default: [] },
+    skillGap: { type: Object, default: {} },
     // USER-FACING DATA (derived / merged)
     education: [
       {
@@ -103,6 +105,17 @@ const userSchema = new mongoose.Schema(
         "INTERVIEW_READY"
       ],
       default: "PROFILE_SETUP"
+    },
+    attempts: [
+      {
+        percentage: Number,
+        date: Date
+      }
+    ],
+
+    interviewScore: {
+      type: Number,
+      default: 0
     }
   },
 

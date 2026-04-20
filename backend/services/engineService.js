@@ -1,6 +1,14 @@
-const { getSkillGap } = require("./skillGapService");
-const { generateRoadmap } = require("./roadmapService");
+const { getSkillGap } = require("./skills/skillGapService");
+const { generateRoadmap } = require("./roadmap/roadmapService");
 const { calculateReadiness } = require("./readinessService");
+const { determinePhase } = require("./phaseService");
+
+
+const { buildCombinedSkills } = require("./skills/skillAggregationService");
+const { syncRoadmapWithProgress } = require("./roadmap/roadmapSyncService");
+const { calculateProgressPercent } = require("./progressFiles/progressAnalyticsService");
+
+const { canUnlockInterview } = require("./interviewEligibilityService");
 
 exports.runEngine = async (user, testScore = 0) => {
   if (!user) throw new Error("User Not Found");
@@ -9,115 +17,49 @@ exports.runEngine = async (user, testScore = 0) => {
     return {
       gap: null,
       roadmap: [],
-      totalEstimatedDays: 0,
-      readinessScore: 0
+      readinessScore: 0,
+      currentPhase: "PROFILE_SETUP",
     };
   }
 
-  const skillMap = new Map();
+  // 1. Skills
+  const combinedSkills = buildCombinedSkills(user);
 
-  // manual skills
-  (user.skills || []).forEach(s => {
-    if (s?.name) {
-      skillMap.set(s.name.toLowerCase(), s);
-    }
-  });
-
-  // evaluated skills (override)
-  (user.evaluatedSkills || []).forEach(s => {
-    if (s?.name) {
-      skillMap.set(s.name.toLowerCase(), s);
-    }
-  });
-
-  const combinedSkills = Array.from(skillMap.values());
-
+  // 2. Gap
   const gap = await getSkillGap(combinedSkills, user.targetRole);
 
+  // 3. Roadmap
   const roadmapData = await generateRoadmap(
     user.targetRole,
     gap.missingSkills,
     gap.weakSkills
   );
 
-
-  //   const aiPrompt = `
-  // You are a career mentor.
-
-  // Role: ${user.targetRole}
-  // Missing Skills: ${gap.missingSkills.join(", ")}
-
-  // Give short motivation + learning strategy.
-  // `;
-
-  // let aiInsight = user.aiInsight || "";
-
-  //   try {
-  //     aiInsight = await askAI(aiPrompt);
-  //   } catch (err) {
-  //     console.error("AI FAILED:", err.message);
-  //     aiInsight = "AI insight not available right now.";
-  //   }
-
-  const roadmap = roadmapData?.roadmap || [];
-
-  const newTopics = roadmap.map(t => t.topic);
-
-  // create map for fast lookup
-  const progressMap = new Map(
-    (user.progress || []).map(p => [p.topic, p])
+  // 4. Sync roadmap with progress
+  const updatedRoadmap = syncRoadmapWithProgress(
+    user,
+    roadmapData.roadmap || []
   );
 
-  // add missing topics (without deleting old progress)
-  newTopics.forEach(topic => {
-    if (!progressMap.has(topic)) {
-      user.progress.push({
-        topic,
-        theoryDone: false,
-        practiceDone: false
-      });
-    }
-  });
+  // 5. Progress %
+  const progressPercent = calculateProgressPercent(user);
 
-  const updatedRoadmap = roadmap.map(item => {
-    const p = user.progress.find(x => x.topic === item.topic);
+  // 6. Readiness
+  const readinessScore = calculateReadiness(user,gap, testScore);
 
-    let remaining = item.estimatedDays || 0;
+  // 7. Phase (clean now)
+  user.currentPhase = determinePhase(user, progressPercent, readinessScore);
 
-    if (p?.theoryDone) remaining -= 0.5;
-    if (p?.practiceDone) remaining -= 0.5;
 
-    return {
-      ...item,
-      remainingDays: Math.max(0, remaining)
-    };
-  });
+    const interviewUnlocked = canUnlockInterview({
+  readinessScore,
+  gap,
+  testScore,
+  progressPercent
+});
+ 
 
-  const readinessScore = calculateReadiness(user, testScore);
-
-// PHASE MANAGEMENT
-const total = (user.progress || []).length * 2;
-
-const completed = (user.progress || []).reduce((acc, p) => {
-  return acc + (p.theoryDone ? 1 : 0) + (p.practiceDone ? 1 : 0);
-}, 0);
-
-const progressPercent = total === 0 ? 0 : (completed / total) * 100;
-
-// FINAL CLEAN FLOW
-if (!user.isProfileComplete) {
-  user.currentPhase = "PROFILE_SETUP";
-} 
-else if (progressPercent < 70) {
-  user.currentPhase = "PRACTICE";
-} 
-else if (readinessScore < 70) {
-  user.currentPhase = "TEST";
-} 
-else {
-  user.currentPhase = "INTERVIEW_READY";
-}
-
+  // 8. Save data
   user.skillGap = gap;
   user.roadmap = updatedRoadmap;
   user.readinessScore = readinessScore;
@@ -127,7 +69,8 @@ else {
   return {
     gap,
     roadmap: updatedRoadmap,
-    totalEstimatedDays: roadmapData.totalEstimatedDays,
-    readinessScore
+    readinessScore,
+    currentPhase: user.currentPhase,
+    canUnlockInterview: interviewUnlocked
   };
 };

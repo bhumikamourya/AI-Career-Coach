@@ -1,5 +1,5 @@
-const Role = require("../models/Role");
-const { levelMap } = require("../utils/levelMap");
+const Role = require("../../models/Role");
+const { levelMap } = require("../../utils/levelMap");
 
 function emptyGap() {
   return {

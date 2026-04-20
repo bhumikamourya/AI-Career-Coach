@@ -9,12 +9,20 @@ const resultSchema = new mongoose.Schema({
   total: Number,
   answers: [
     {
-       question: String,
+      question: String,
       selected: String,
       correct: String,
-      isCorrect: Boolean  
+      isCorrect: Boolean
     }
-  ]
+  ],
+  topicStats: Object,
+  weakSkillsSnapshot: [String],
+  readinessScore: Number,
+  createdAt: {
+    type: Date,
+    default: Date.now
+  }
+
 }, { timestamps: true });
 
 module.exports = mongoose.model("Result", resultSchema);

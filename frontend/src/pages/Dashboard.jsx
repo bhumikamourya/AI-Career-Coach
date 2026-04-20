@@ -15,8 +15,10 @@ const Dashboard = () => {
   const fetchDashboard = async () => {
     try {
       const res = await getDashboardData();
+
       setData(res.data);
     } catch (err) {
+      console.error(" Dashboard fetch error:", err);
       console.error(err);
     } finally {
       setLoading(false);
@@ -26,7 +28,8 @@ const Dashboard = () => {
   if (loading) return <p>Loading dashboard...</p>;
   if (!data) return <p>No data found</p>;
 
-  const { roadmap, skillGap, readinessScore, progress } = data;
+  const { roadmap, skillGap, readinessScore, progress, aiInsight, currentPhase } = data;
+
 
   //  Progress Calculation
   const total = (progress?.length || 0) * 2;
@@ -39,17 +42,26 @@ const Dashboard = () => {
 
   //  Start Practice Check
   const handleStartPractice = () => {
-    if (data.currentPhase !== "TEST" && data.currentPhase !== "INTERVIEW_READY") {
-      alert(`Complete learning at least 70%. cycle before taking test. Current: ${percent}%`);
+    if (currentPhase !== "TEST" && currentPhase !== "INTERVIEW_READY") {
+      alert(`🚫 Locked: Reach at least 70% Progress to unlock test.\nCurrent: ${percent}%`);
       return;
     }
     navigate("/practice");
+  };
+
+  const handleInterview = () => {
+    if (readinessScore < 70) {
+      alert(`🚫 Interview locked. Required: 70% Readiness\nCurrent Readiness: ${readinessScore}%`);
+      return;
+    }
+    navigate("/interview");
   };
 
   //  Mark Complete
   const markComplete = async (topic, type) => {
     try {
       const res = await markProgress({ topic, type });
+
 
       setData(prev => ({
         ...prev,
@@ -58,6 +70,7 @@ const Dashboard = () => {
         currentPhase: res.data.updatedUser.currentPhase,
       }));
     } catch (err) {
+      console.error("Progress update error:", err);
       console.error(err);
     }
   };
@@ -67,6 +80,14 @@ const Dashboard = () => {
       <div className="max-w-4xl mx-auto space-y-6">
 
         <h2 className="text-3xl font-bold">Career Dashboard</h2>
+
+        {/* CURRENT PHASE */}
+        <div className="bg-white p-4 rounded shadow">
+          <h3 className="font-semibold">Current Phase</h3>
+          <p className="text-lg font-bold text-indigo-600">
+            {currentPhase}
+          </p>
+        </div>
 
         {/* PROFILE BUTTON  */}
         <button
@@ -79,8 +100,27 @@ const Dashboard = () => {
         {/* READINESS */}
         <div className="bg-white p-4 rounded shadow">
           <h3 className="font-semibold">Readiness Score</h3>
-          <p className="text-2xl font-bold text-indigo-600">
-            {readinessScore}%
+
+          <div className="w-full bg-gray-200 h-4 rounded mt-2">
+            <div
+              className={`h-4 rounded ${readinessScore >= 70
+                ? "bg-green-500"
+                : readinessScore >= 50
+                  ? "bg-yellow-500"
+                  : "bg-red-500"
+                }`}
+              style={{ width: `${readinessScore}%` }}
+            />
+          </div>
+
+          <p className="mt-2 font-bold">{readinessScore}%</p>
+
+          <p className="text-sm mt-1 text-gray-600">
+            {readinessScore >= 75
+              ? "🚀 Interview Ready"
+              : readinessScore >= 50
+                ? "⚡ Almost Ready"
+                : "⚠ Needs Improvement"}
           </p>
         </div>
 
@@ -89,18 +129,36 @@ const Dashboard = () => {
           <h3 className="font-semibold mb-2">Skill Gap</h3>
           <p>Missing: {skillGap?.missingSkills?.join(", ") || "None"}</p>
           <p>Weak: {skillGap?.weakSkills?.join(", ") || "None"}</p>
+
+
+          {/* AI INSIGHT */}
+          <div className="bg-white p-4 rounded shadow">
+            <h3 className="font-semibold mb-2">AI Mentor</h3>
+
+            {!aiInsight ? (
+              <p className="text-red-500">⚠ AI not available</p>
+            ) : (
+              <>
+                <p><strong>📊 Summary:</strong> {aiInsight.summary}</p>
+                <p><strong>🎯 Why It Matters:</strong> {aiInsight.whyItMatters}</p>
+                <p><strong>🔥 Motivation:</strong> {aiInsight.motivation}</p>
+
+                <div>
+                  <strong>Learning Order:</strong>
+                  <ul className="list-disc ml-5">
+                    {aiInsight.learningOrder?.map((item, i) => (
+                      <li key={i}>{item}</li>
+                    ))}
+                  </ul>
+                </div>
+              </>
+            )}
+          </div>
         </div>
 
         {/* PROGRESS BAR */}
         <div className="bg-white p-4 rounded shadow">
           <p className="font-semibold mb-2">Progress</p>
-          <h3 className="text-lg font-semibold mb-2">Personalized Learning Roadmap</h3>
-          <p className="font-semibold mt-3">Overall Progress</p>
-
-          <p className="text-lg font-semibold text-purple-700 mb-3">
-            Total Time: {roadmap.totalEstimatedDays} days
-          </p>
-
           <div className="w-full bg-gray-200 h-3 rounded">
             <div
               className="bg-green-500 h-3 rounded"
@@ -113,7 +171,7 @@ const Dashboard = () => {
 
         {/* ROADMAP */}
         <div className="bg-white p-4 rounded shadow">
-          <h3 className="font-semibold mb-3">Learning Roadmap</h3>
+          <h3 className="text-lg font-semibold mb-2">Personalized Learning Roadmap</h3>
 
           {roadmap.map((item, i) => {
             const p = progress.find(x => x.topic === item.topic);
@@ -194,10 +252,16 @@ const Dashboard = () => {
           </button>
 
           <button
-            onClick={() => navigate("/interview")}
+            onClick={handleInterview}
             className="flex-1 bg-indigo-600 text-white py-2 rounded"
           >
             AI Interview
+          </button>
+          <button
+            onClick={() => navigate("/practice-history")}
+            className="bg-gray-700 text-white px-4 py-2 rounded"
+          >
+            View Test History
           </button>
         </div>
 

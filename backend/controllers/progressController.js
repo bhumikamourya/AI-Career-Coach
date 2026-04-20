@@ -1,5 +1,6 @@
 const User = require("../models/User");
-
+const { updateUserProgress } = require("../services/progressFiles/progressService");
+const { runEngine } = require("../services/engineService");
 exports.updateProgress = async (req, res) => {
   try {
 
@@ -16,52 +17,16 @@ exports.updateProgress = async (req, res) => {
       return res.status(400).json({ message: "Invalid type" });
     }
 
-    // USER
-    const user = await User.findById(req.user.id);
-
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
-    }
-
-   user.progress = user.progress || [];
-
-    //FIND TOPIC
-    let item = user.progress.find((p) => p.topic === topic);
-
-    // AUTO CREATE IF NOT EXISTS (IMPORTANT FIX)
-    if (!item) {
-      item = {
-        topic,
-        theoryDone: false,
-        practiceDone: false
-      };
-      user.progress.push(item);
-    }
-
-    // UPDATE
-    let updated = false;
-
-    if (type === "theory") {
-      if (!item.theoryDone) {
-        item.theoryDone = true;
-        updated = true;
-      }
-    }
-
-    if (type === "practice") {
-      if (!item.practiceDone) {
-        item.practiceDone = true;
-        updated = true;
-      }
-    }
+     const { user, updated } = await updateUserProgress(
+      req.user.id,
+      topic,
+      type
+    );
 
     if (!updated) {
       return res.status(200).json({ message: "Already completed" });
     }
 
-    await user.save();
-
-    const { runEngine } = require("../services/engineService");
     const result = await runEngine(user);
 
     res.json({
@@ -69,7 +34,6 @@ exports.updateProgress = async (req, res) => {
       updatedUser: user,
       roadmap: result.roadmap,
       gap: result.gap,
-      totalEstimatedDays: result.totalEstimatedDays,
        currentPhase: user.currentPhase 
     });
 
