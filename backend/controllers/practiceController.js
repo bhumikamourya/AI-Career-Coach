@@ -319,8 +319,9 @@ exports.submitAnswers = async (req, res) => {
       score: scoreWeight,
       total: totalWeight,
       percentage,
+      correct,
+      wrong,
       answers: detailed,
-
 
       topicStats,
   weakSkillsSnapshot: engineResult.gap.weakSkills,

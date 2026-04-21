@@ -5,6 +5,13 @@ const determinePhase = (user, progressPercent, readinessScore) => {
   if (!user.isProfileComplete) {
     return "PROFILE_SETUP";
   }
+    if (!user.skillGap || !user.skillGap.missingSkills) {
+    return "SKILL_ANALYSIS";
+  }
+
+  if (!user.roadmap || user.roadmap.length === 0) {
+    return "ROADMAP";
+  }
 
   if (progressPercent < 70) {
     return "PRACTICE";

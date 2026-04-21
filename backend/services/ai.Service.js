@@ -14,8 +14,9 @@ exports.askAI = async (prompt) => {
     );
 
     return res.data.candidates?.[0]?.content?.parts?.[0]?.text || "";
+
   } catch (err) {
-    console.log("Gemini Error:", err.response?.data || err.message);
-    throw new Error("AI error");
+    console.error("Gemini Error:", err.response?.data || err.message);
+    throw new Error("AI request failed");
   }
 };

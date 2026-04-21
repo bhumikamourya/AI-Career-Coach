@@ -116,7 +116,7 @@ const Dashboard = () => {
           <p className="mt-2 font-bold">{readinessScore}%</p>
 
           <p className="text-sm mt-1 text-gray-600">
-            {readinessScore >= 75
+            {readinessScore >= 70
               ? "🚀 Interview Ready"
               : readinessScore >= 50
                 ? "⚡ Almost Ready"
@@ -136,21 +136,45 @@ const Dashboard = () => {
             <h3 className="font-semibold mb-2">AI Mentor</h3>
 
             {!aiInsight ? (
-              <p className="text-red-500">⚠ AI not available</p>
+              <p className="text-red-500">⚡ Generating AI insight...</p>
             ) : (
               <>
                 <p><strong>📊 Summary:</strong> {aiInsight.summary}</p>
-                <p><strong>🎯 Why It Matters:</strong> {aiInsight.whyItMatters}</p>
-                <p><strong>🔥 Motivation:</strong> {aiInsight.motivation}</p>
 
-                <div>
-                  <strong>Learning Order:</strong>
+                <p className="mt-2">
+                  <strong>🎯 Why It Matters:</strong> {aiInsight.whyItMatters}
+                </p>
+
+                <div className="mt-2">
+                  <strong>📚 Learning Order:</strong>
                   <ul className="list-disc ml-5">
                     {aiInsight.learningOrder?.map((item, i) => (
                       <li key={i}>{item}</li>
                     ))}
                   </ul>
                 </div>
+
+                <div className="mt-2">
+                  <strong>🔥 Priority Skills:</strong>
+                  {aiInsight.prioritySkills?.map((s, i) => (
+                    <p key={i} className="text-sm">
+                      {s.name} → {s.reason}
+                    </p>
+                  ))}
+                </div>
+
+                <div className="mt-2">
+                  <strong>⚡ Difficulty:</strong>
+                  {aiInsight.difficulty?.map((d, i) => (
+                    <p key={i} className="text-sm">
+                      {d.name} ({d.level})
+                    </p>
+                  ))}
+                </div>
+
+                <p className="mt-3 font-medium text-indigo-600">
+                  {aiInsight.motivation}
+                </p>
               </>
             )}
           </div>

@@ -10,6 +10,9 @@ const { calculateProgressPercent } = require("./progressFiles/progressAnalyticsS
 
 const { canUnlockInterview } = require("./interviewEligibilityService");
 
+const { generateSkillGapInsight } = require("./skills/skillGapAIService");
+
+
 exports.runEngine = async (user, testScore = 0) => {
   if (!user) throw new Error("User Not Found");
 
@@ -28,26 +31,39 @@ exports.runEngine = async (user, testScore = 0) => {
   // 2. Gap
   const gap = await getSkillGap(combinedSkills, user.targetRole);
 
-  // 3. Roadmap
+    // 3. AI Insight (ONLY IF NEEDED)
+  let aiInsight = user.aiInsight;
+
+  const shouldRegenerateAI =
+    !aiInsight ||
+    JSON.stringify(user.skillGap?.weakSkills) !== JSON.stringify(gap.weakSkills) ||
+    JSON.stringify(user.skillGap?.missingSkills) !== JSON.stringify(gap.missingSkills);
+
+  if (shouldRegenerateAI) {
+    console.log("⚡ Generating AI Insight...");
+    aiInsight = await generateSkillGapInsight(gap, user.targetRole);
+  }
+
+  // 4. Roadmap
   const roadmapData = await generateRoadmap(
     user.targetRole,
     gap.missingSkills,
     gap.weakSkills
   );
 
-  // 4. Sync roadmap with progress
+  // 5. Sync roadmap with progress
   const updatedRoadmap = syncRoadmapWithProgress(
     user,
     roadmapData.roadmap || []
   );
 
-  // 5. Progress %
+  // 6. Progress %
   const progressPercent = calculateProgressPercent(user);
 
-  // 6. Readiness
+  // 7. Readiness
   const readinessScore = calculateReadiness(user,gap, testScore);
 
-  // 7. Phase (clean now)
+  // 8. Phase (clean now)
   user.currentPhase = determinePhase(user, progressPercent, readinessScore);
 
 
@@ -59,10 +75,11 @@ exports.runEngine = async (user, testScore = 0) => {
 });
  
 
-  // 8. Save data
+  // 9. Save data
   user.skillGap = gap;
   user.roadmap = updatedRoadmap;
   user.readinessScore = readinessScore;
+  user.aiInsight = aiInsight;
 
   await user.save();
 
@@ -71,6 +88,7 @@ exports.runEngine = async (user, testScore = 0) => {
     roadmap: updatedRoadmap,
     readinessScore,
     currentPhase: user.currentPhase,
+    aiInsight,
     canUnlockInterview: interviewUnlocked
   };
 };

@@ -72,6 +72,24 @@ const userSchema = new mongoose.Schema(
     },
     roadmap: { type: Array, default: [] },
     skillGap: { type: Object, default: {} },
+    aiInsight: {
+      summary: String,
+      whyItMatters: String,
+      learningOrder: [String],
+      prioritySkills: [
+        {
+          name: String,
+          reason: String
+        }
+      ],
+      difficulty: [
+        {
+          name: String,
+          level: String
+        }
+      ],
+      motivation: String
+    },
     // USER-FACING DATA (derived / merged)
     education: [
       {

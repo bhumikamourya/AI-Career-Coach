@@ -20,8 +20,8 @@ exports.updateProfile = async (req, res) => {
       req.user.id,
       req.body
     );
-    console.log(" PROFILE UPDATE INPUT:", req.body);
-console.log(" BEFORE ENGINE USER:", user);
+//     console.log(" PROFILE UPDATE INPUT:", req.body);
+// console.log(" BEFORE ENGINE USER:", user);
 
     const result = await runEngine(user);
 
@@ -53,7 +53,7 @@ exports.deleteSkill = async (req, res) => {
 exports.getDashboardData = async (req, res) => {
   try {
     const user = await User.findById(req.user.id).select(
-      "roadmap skillGap readinessScore evaluatedSkills progress currentPhase attempts"
+      "roadmap skillGap readinessScore evaluatedSkills progress currentPhase attempts, aiInsight"
     );
 
     if (!user) {
@@ -67,8 +67,9 @@ exports.getDashboardData = async (req, res) => {
       evaluatedSkills: user.evaluatedSkills || [],
       progress: user.progress || [],
       currentPhase: user.currentPhase,
-      attempts: user.attempts || []
-    });
+      attempts: user.attempts || [],
+      aiInsight: user.aiInsight || null 
+        });
 
   } catch (err) {
     console.error("DASHBOARD ERROR:", err);

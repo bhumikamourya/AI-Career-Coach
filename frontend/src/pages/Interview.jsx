@@ -25,8 +25,8 @@ const Interview = () => {
       const readiness = res.data.readinessScore;
       const weakSkills = res.data.skillGap?.weakSkills || [];
 
-      // 🔒 LOCK INTERVIEW
-      if (readiness < 75) {
+      // LOCK INTERVIEW
+      if (readiness < 70) {
         setBlocked(true);
         return;
       }

@@ -7,6 +7,9 @@ const resultSchema = new mongoose.Schema({
   },
   score: Number,
   total: Number,
+  percentage: Number,  
+  correct: Number, 
+  wrong: Number,  
   answers: [
     {
       question: String,
@@ -17,11 +20,11 @@ const resultSchema = new mongoose.Schema({
   ],
   topicStats: Object,
   weakSkillsSnapshot: [String],
-  readinessScore: Number,
-  createdAt: {
-    type: Date,
-    default: Date.now
-  }
+  readinessScore: Number
+  // createdAt: {
+  //   type: Date,
+  //   default: Date.now
+  // }
 
 }, { timestamps: true });
 
