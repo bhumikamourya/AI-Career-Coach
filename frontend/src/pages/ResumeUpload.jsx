@@ -36,7 +36,7 @@ const ResumeUpload = () => {
 
       alert("Resume Uploaded & Analyzed");
 
-      navigate("/");
+      navigate("/profile");
       // console.log("GAP:", res.data.gap);
       // console.log("ROADMAP:", res.data.roadmap);
     } catch (err) {

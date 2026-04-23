@@ -1,13 +1,14 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Register from "./pages/Register";
 import Login from "./pages/Login";
-import Dashboard from "./pages/Dashboard";
+import DashboardContainer from "./pages/DashboardContainer";
 import ResumeUpload from "./pages/ResumeUpload";
 import ResumeBuilder from "./pages/ResumeBuilder";
 import Practice from "./pages/Practice";
 import Interview from "./pages/Interview";
 import ProfilePage from "./pages/ProfilePage";
 import TestHistory from "./pages/TestHistory";
+import Home from "./pages/Home";
 
 function App() {
   return (
@@ -16,7 +17,8 @@ function App() {
         <Route path="/register" element={<Register />} />
         <Route path="/login" element={<Login />} />
 
-        <Route path="/" element={<Dashboard />} />
+        <Route path="/" element={<Home />} />
+        <Route path="/dashboard" element={<DashboardContainer />} />
 
         <Route path="/profile" element={<ProfilePage />} />
 

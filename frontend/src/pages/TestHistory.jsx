@@ -43,7 +43,7 @@ const TestHistory = () => {
             <h2 className="text-3xl font-bold">Test History</h2>
 
             <button
-              onClick={() => navigate("/")}
+              onClick={() => navigate("/dashboard")}
               className="bg-gray-800 text-white px-4 py-2 rounded"
             >
               Dashboard

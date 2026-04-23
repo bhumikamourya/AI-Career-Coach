@@ -158,7 +158,7 @@ const Practice = () => {
 
           {/* BUTTON */}
           <button
-            onClick={() => navigate("/")}
+            onClick={() => navigate("/dashboard")}
             className="w-full bg-blue-600 text-white py-3 rounded-xl hover:bg-blue-700"
           >
             Go to Dashboard
