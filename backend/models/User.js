@@ -74,20 +74,8 @@ const userSchema = new mongoose.Schema(
     skillGap: { type: Object, default: {} },
     aiInsight: {
       summary: String,
-      whyItMatters: String,
-      learningOrder: [String],
-      prioritySkills: [
-        {
-          name: String,
-          reason: String
-        }
-      ],
-      difficulty: [
-        {
-          name: String,
-          level: String
-        }
-      ],
+      problem: String,
+      strategy: String,
       motivation: String
     },
     // USER-FACING DATA (derived / merged)

@@ -6,6 +6,16 @@ import Footer from "../components/Footer";
 
 const Home = () => {
   const navigate = useNavigate();
+  const token = localStorage.getItem("token");
+
+  const handleGetStarted = () => {
+
+  if (token) {
+    navigate("/dashboard");
+  } else {
+    navigate("/register");
+  }
+};
 
   const balancedTransition = { duration: 0.7, ease: [0.4, 0, 0.2, 1] };
 
@@ -69,12 +79,12 @@ const Home = () => {
             <motion.button 
               whileHover={{ scale: 1.02, y: -3 }}
               whileTap={{ scale: 0.98 }}
-              onClick={() => navigate("/register")}
+              onClick={handleGetStarted}
               className="bg-gradient-to-r from-[#818cf8] to-[#a78bfa] text-white px-12 py-5 rounded-2xl font-black text-lg shadow-xl flex items-center gap-3"
             >
-              Get Started <ChevronRight size={20} />
+              {token ? "Go to Dashboard" : "Get Started"} <ChevronRight size={20} />
             </motion.button>
-            
+
           </motion.div>
 
           {/* Feature Grid */}

@@ -13,7 +13,11 @@ exports.askAI = async (prompt) => {
       }
     );
 
-    return res.data.candidates?.[0]?.content?.parts?.[0]?.text || "";
+  const rawText =
+      res.data?.candidates?.[0]?.content?.parts?.[0]?.text || "";
+
+    return rawText;
+
 
   } catch (err) {
     console.error("Gemini Error:", err.response?.data || err.message);

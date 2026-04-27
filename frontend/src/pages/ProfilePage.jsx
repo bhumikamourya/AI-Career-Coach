@@ -17,7 +17,7 @@ import ProjectsCard from "../components/profile/right/ProjectsCard";
 import EducationCard from "../components/profile/right/EducationCard";
 import ResumeCard from "../components/profile/right/ResumeCard";
 
-import Loader from "../components/Profile/common/Loader";
+import Loader from "../components/common/Loader";
 
 const ProfilePage = () => {
     const [user, setUser] = useState(null);

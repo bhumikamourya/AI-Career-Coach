@@ -1,67 +1,68 @@
-import { motion } from "framer-motion";
+import { FiCpu } from "react-icons/fi";
 
 const AIInsightCard = ({ aiInsight }) => {
+  if (!aiInsight) {
+    return (
+      <div className="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm">
+        <h3 className="flex items-center gap-2 text-sm font-semibold text-slate-700">
+          <FiCpu className="text-indigo-500" />
+          AI Coach Insight
+        </h3>
+
+        <p className="mt-3 text-sm text-slate-400 animate-pulse">
+          Analyzing your progress...
+        </p>
+      </div>
+    );
+  }
+
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="bg-white/40 backdrop-blur-xl rounded-[2rem] p-6 
-      border border-white/60 shadow-[0_20px_50px_rgba(0,0,0,0.05)]"
-    >
-      <h3 className="text-lg font-bold text-slate-800 mb-4">
-        🤖 AI Mentor Insight
+    <>
+
+      {/* HEADER */}
+      <h3 className="flex items-center gap-2 text-sm font-semibold text-slate-700">
+        <FiCpu className="text-indigo-500" />
+        AI Coach Insight
       </h3>
 
-      {!aiInsight ? (
-        <p className="text-indigo-500 animate-pulse">
-          ⚡ Generating personalized insight...
-        </p>
-      ) : (
-        <div className="space-y-3 text-sm text-slate-600">
+      {/* SUMMARY (PRIMARY) */}
+      <p className="mt-4 text-base font-medium text-slate-900 leading-snug">
+        {aiInsight.summary}
+      </p>
 
-          <p>
-            <span className="font-semibold text-slate-800">📊 Summary:</span>{" "}
-            {aiInsight.summary}
+      {/* PROBLEM */}
+      {aiInsight.problem && (
+        <div className="mt-4 p-3 rounded-xl bg-red-50 border border-red-100">
+          <p className="text-xs font-semibold text-red-500">
+            Problem
           </p>
-
-          <p>
-            <span className="font-semibold text-slate-800">🎯 Why It Matters:</span>{" "}
-            {aiInsight.whyItMatters}
+          <p className="text-sm text-red-700 mt-1">
+            {aiInsight.problem}
           </p>
-
-          <div>
-            <span className="font-semibold text-slate-800">📚 Learning Path:</span>
-            <ul className="list-disc ml-5 mt-1">
-              {aiInsight.learningOrder?.map((item, i) => (
-                <li key={i}>{item}</li>
-              ))}
-            </ul>
-          </div>
-
-          <div>
-            <span className="font-semibold text-slate-800">🔥 Priority Skills:</span>
-            {aiInsight.prioritySkills?.map((s, i) => (
-              <p key={i}>{s.name} → {s.reason}</p>
-            ))}
-          </div>
-
-
-          <div className="mt-2">
-            <strong className="font-semibold text-slate-800">⚡ Difficulty:</strong>
-            {aiInsight.difficulty?.map((d, i) => (
-              <p key={i} className="text-sm">
-                {d.name} ({d.level})
-              </p>
-            ))}
-          </div>
-
-          <p className="mt-3 font-semibold text-indigo-600">
-            {aiInsight.motivation}
-          </p>
-
         </div>
       )}
-    </motion.div>
+
+      {/* STRATEGY */}
+      {aiInsight.strategy && (
+        <div className="mt-3 p-3 rounded-xl bg-indigo-50 border border-indigo-100">
+          <p className="text-xs font-semibold text-indigo-500">
+            Next Step
+          </p>
+          <p className="text-sm text-indigo-700 mt-1">
+            {aiInsight.strategy}
+          </p>
+        </div>
+      )}
+
+      {/* MOTIVATION */}
+      {aiInsight.motivation && (
+        <p className="mt-4 text-xs text-slate-400 italic">
+          {aiInsight.motivation}
+        </p>
+      )}
+
+      
+</>
   );
 };
 

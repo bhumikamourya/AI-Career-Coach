@@ -26,13 +26,7 @@ const RoadmapItem = ({ item, progress, markComplete }) => {
   };
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      whileHover={{ scale: 1.01 }}
-      className="bg-white/40 backdrop-blur-xl rounded-[1.5rem] p-5 
-      border border-white/60 shadow-[0_10px_30px_rgba(0,0,0,0.05)] transition-all"
-    >
+    <>
 
       {/* HEADER */}
       <div className="flex flex-wrap justify-between items-center gap-2 mb-3">
@@ -128,7 +122,7 @@ const RoadmapItem = ({ item, progress, markComplete }) => {
         </div>
       )}
 
-    </motion.div>
+    </>
   );
 };
 

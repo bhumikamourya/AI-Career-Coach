@@ -1,25 +1,27 @@
 const { askAI } = require("../ai.Service");
 
-// SAFE JSON PARSER
-const cleanJSON = (text) => {
-  try {
-    const cleaned = text
-      .replace(/```json/g, "")
-      .replace(/```/g, "")
-      .trim();
+// EXTRACT JSON SAFELY
 
-    return JSON.parse(cleaned);
+const extractJSON = (text) => {
+  try {
+    const match = text.match(/\{[\s\S]*\}/); // get first JSON block
+    if (!match) return null;
+
+    return JSON.parse(match[0]);
   } catch (err) {
-    console.error("JSON Parse Failed:", text);
+    console.error("JSON extraction failed:", text);
     return null;
   }
 };
 
-// MAIN AI FUNCTION
+const trim = (text, max = 100) =>
+  text && text.length > max ? text.slice(0, max) + "..." : text;
+
+
 exports.generateSkillGapInsight = async (gap, role) => {
   try {
     const prompt = `
-You are an AI career mentor.
+You are an AI career coach.
 
 User role: ${role}
 
@@ -27,41 +29,54 @@ Missing skills: ${gap.missingSkills.join(", ") || "None"}
 Weak skills: ${gap.weakSkills.join(", ") || "None"}
 
 STRICT RULES:
-- Return ONLY JSON
+- Return ONLY valid JSON
+- No markdown (no backticks)
+- No explanation text
+- No text before or after JSON
+- Each value must be under 15 words
+- Use direct coaching tone (no long sentences)
 
-FORMAT:
+OUTPUT EXACTLY:
+
 {
   "summary": "",
-  "whyItMatters": "",
-  "learningOrder": [],
-  "prioritySkills": [
-    { "name": "", "reason": "" }
-  ],
-  "difficulty": [
-    { "name": "", "level": "Easy/Medium/Hard" }
-  ],
+  "problem": "",
+  "strategy": "",
   "motivation": ""
 }
 `;
 
-
     const response = await askAI(prompt);
 
-    const parsed = cleanJSON(response);
+    // //  DEBUG LOG
+    // console.log(" RAW AI RESPONSE ");
+    // console.log(response);
+
+    const parsed = extractJSON(response);
 
     if (!parsed) throw new Error("Invalid AI response");
 
-    return parsed;
+    //  OUTPUT
+    return {
+      summary: trim(parsed.summary),
+      problem: trim(parsed.problem),
+      strategy: trim(parsed.strategy),
+      motivation: trim(parsed.motivation),
+    };
 
   } catch (err) {
     console.error("AI SkillGap Error:", err.message);
 
-    // FALLBACK SYSTEM (CRITICAL)
+    // SMART FALLBACK (UI SAFE)
     return {
-      summary: "You need to improve your weak and missing skills to become job-ready.",
-      whyItMatters: "These skills are critical for performing well in your target role.",
-      learningOrder: [...gap.weakSkills, ...gap.missingSkills].slice(0, 5),
-      motivation: "Stay consistent. Small daily progress leads to big success."
+      summary: `You're not ready for ${role} yet.`,
+      problem: gap.missingSkills?.[0]
+        ? `${gap.missingSkills[0]} is your biggest gap`
+        : "Weak fundamentals are slowing progress",
+      strategy: gap.missingSkills?.[0]
+        ? `Start learning ${gap.missingSkills[0]} daily`
+        : `Practice ${gap.weakSkills?.[0] || "core skills"} consistently`,
+      motivation: "Stay consistent — results will follow."
     };
   }
 };

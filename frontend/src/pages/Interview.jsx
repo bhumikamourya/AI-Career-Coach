@@ -109,7 +109,7 @@ const Interview = () => {
     }
   };
 
-  // 🔒 BLOCKED UI
+  //  BLOCKED UI
   if (blocked) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">

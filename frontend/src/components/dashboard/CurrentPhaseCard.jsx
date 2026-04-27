@@ -1,23 +1,25 @@
-import { motion } from "framer-motion";
 import { FiActivity } from "react-icons/fi";
-import { glassCard, titleStyle, valueStyle } from "../../styles/cardStyles";
 
-const CurrentPhaseCard = ({ phase }) => (
-  <motion.div
-    initial={{ opacity: 0, y: 20 }}
-    animate={{ opacity: 1, y: 0 }}
-    whileHover={{ y: -5 }}
-    className={glassCard}
-  >
-    <h3 className={titleStyle}>
-      <FiActivity className="text-indigo-500" />
-      Current Phase
-    </h3>
+const CurrentPhaseCard = ({ phase }) => {
+  return (
+   <>
+      <div className="absolute -top-10 -right-10 w-40 h-40 bg-indigo-300/20 blur-3xl rounded-full" />
 
-    <p className={`${valueStyle} text-indigo-600 mt-2`}>
-      {phase}
-    </p>
-  </motion.div>
-);
+      <div className="flex justify-between items-center">
+        <h3 className="flex items-center gap-2 font-semibold text-slate-700">
+          <FiActivity className="text-indigo-500" />
+          Current Phase
+        </h3>
+        <span className="w-2.5 h-2.5 bg-indigo-500 rounded-full animate-pulse" />
+      </div>
+
+      <p className="text-2xl font-bold text-slate-800 mt-3">{phase}</p>
+
+      <p className="text-sm text-slate-500 mt-2">
+        Your current learning stage based on AI evaluation.
+      </p>
+</>
+  );
+};
 
 export default CurrentPhaseCard;

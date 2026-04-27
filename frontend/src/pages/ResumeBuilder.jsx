@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { saveResume, getResume } from "../services/api";
 import { useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
 
 const ResumeBuilder = () => {
   const [form, setForm] = useState({
@@ -23,36 +24,30 @@ const ResumeBuilder = () => {
   const fetchResume = async () => {
     try {
       const res = await getResume();
-
       const data = res.data.data;
+
       setSource(res.data.source);
 
       setForm({
-  name: data.name || "",
-  email: data.email || "",
-
-  education: Array.isArray(data.education)
-    ? data.education[0]?.college || ""
-    : data.education || "",
-
-  skills: Array.isArray(data.skills)
-    ? data.skills.join(", ")
-    : data.skills || "",
-
-  experience: data.experience || "",
-
-  projects: Array.isArray(data.projects)
-    ? data.projects
-        .map(p => {
-          let line = p.title || "";
-          if (p.description) {
-            line += " - " + p.description;
-          }
-          return line;
-        })
-        .join("\n")
-    : data.projects || ""
-});
+        name: data.name || "",
+        email: data.email || "",
+        education: Array.isArray(data.education)
+          ? data.education[0]?.college || ""
+          : data.education || "",
+        skills: Array.isArray(data.skills)
+          ? data.skills.join(", ")
+          : data.skills || "",
+        experience: data.experience || "",
+        projects: Array.isArray(data.projects)
+          ? data.projects
+              .map((p) => {
+                let line = p.title || "";
+                if (p.description) line += " - " + p.description;
+                return line;
+              })
+              .join("\n")
+          : data.projects || ""
+      });
     } catch (err) {
       console.error(err);
     }
@@ -86,125 +81,120 @@ const ResumeBuilder = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-100 to-purple-100 flex justify-center items-center p-6">
+    <div className="min-h-screen bg-[#f3f4fb] p-6 relative overflow-hidden">
 
-      <div className="bg-white shadow-2xl rounded-2xl p-8 w-full max-w-3xl space-y-6">
+      {/* Background Glow */}
+      <div className="absolute inset-0 z-0 opacity-60 pointer-events-none">
+        <div className="absolute top-[-5%] left-[-10%] w-[500px] h-[500px] bg-[#d9d4ff] rounded-full blur-[110px]" />
+        <div className="absolute bottom-[-10%] right-[-5%] w-[500px] h-[500px] bg-[#ffecde] rounded-full blur-[110px]" />
+      </div>
+
+      <motion.div
+        initial={{ opacity: 0, y: 30 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="max-w-4xl mx-auto relative z-10 space-y-6"
+      >
 
         {/* HEADER */}
-        <div className="text-center">
-          <h2 className="text-3xl font-bold text-gray-800">
-            Resume Builder
-          </h2>
+        <div className="flex justify-between items-center">
+          <div>
+            <h2 className="text-4xl font-extrabold text-[#3b3a4a]">
+              Resume Builder
+            </h2>
 
-          {source === "upload" && (
-            <p className="text-sm text-blue-500 mt-1">
-              Pre-filled from uploaded resume
+            <p className="text-slate-500 text-sm italic">
+              Build & manage your resume professionally
             </p>
-          )}
 
-          {source === "builder" && (
-            <p className="text-sm text-green-500 mt-1">
-              Editing your built resume
-            </p>
-          )}
-        </div>
+            {source === "upload" && (
+              <p className="text-xs text-[#9689ff] mt-1">
+                Pre-filled from uploaded resume
+              </p>
+            )}
 
-        {/* SECTION: BASIC INFO */}
-        <div className="bg-gray-50 p-5 rounded-xl shadow-sm">
-          <h3 className="font-semibold text-lg mb-3 text-gray-700">
-            Basic Information
-          </h3>
-
-          <div className="grid grid-cols-2 gap-4">
-            <input
-              name="name"
-              value={form.name}
-              onChange={handleChange}
-              placeholder="Full Name"
-              className="p-2 border rounded-lg focus:ring-2 focus:ring-indigo-400"
-            />
-
-            <input
-              name="email"
-              value={form.email}
-              onChange={handleChange}
-              placeholder="Email"
-              className="p-2 border rounded-lg focus:ring-2 focus:ring-indigo-400"
-            />
+            {source === "builder" && (
+              <p className="text-xs text-emerald-500 mt-1">
+                Editing your saved resume
+              </p>
+            )}
           </div>
+
+          <button
+            onClick={() => navigate("/profile")}
+            className="px-5 py-2 bg-white border border-[#d0d2ff] rounded-xl font-bold text-[#9689ff] hover:bg-[#f8f7ff]"
+          >
+            Profile
+          </button>
         </div>
 
-        {/* SECTION: EDUCATION */}
-        <div className="bg-gray-50 p-5 rounded-xl shadow-sm">
-          <h3 className="font-semibold text-lg mb-3 text-gray-700">
-            Education
-          </h3>
+        {/* MAIN FORM CARD */}
+        <div className="bg-white/50 backdrop-blur-xl border border-white/60 p-8 rounded-[2.5rem] shadow-xl space-y-6">
 
-          <input
-            name="education"
-            value={form.education}
-            onChange={handleChange}
-            placeholder="College / Degree"
-            className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-indigo-400"
-          />
+          {/* BASIC INFO */}
+          <Section title="Basic Information">
+            <div className="grid md:grid-cols-2 gap-4">
+              <Input name="name" value={form.name} onChange={handleChange} placeholder="Full Name" />
+              <Input name="email" value={form.email} onChange={handleChange} placeholder="Email" />
+            </div>
+          </Section>
+
+          {/* EDUCATION */}
+          <Section title="Education">
+            <Input name="education" value={form.education} onChange={handleChange} placeholder="College / Degree" />
+          </Section>
+
+          {/* SKILLS */}
+          <Section title="Skills">
+            <Input name="skills" value={form.skills} onChange={handleChange} placeholder="React, Node, MongoDB..." />
+          </Section>
+
+          {/* EXPERIENCE */}
+          <Section title="Experience">
+            <Textarea name="experience" value={form.experience} onChange={handleChange} placeholder="Describe your experience..." />
+          </Section>
+
+          {/* PROJECTS */}
+          <Section title="Projects">
+            <Textarea name="projects" value={form.projects} onChange={handleChange} placeholder="One project per line" />
+          </Section>
+
+          {/* SAVE BUTTON */}
+          <button
+            onClick={handleSave}
+            disabled={loading}
+            className="w-full py-4 rounded-2xl bg-gradient-to-r from-[#818cf8] to-[#a78bfa] text-white font-bold shadow-lg hover:brightness-105 transition-all disabled:opacity-50"
+          >
+            {loading ? "Saving Resume..." : "Save Resume"}
+          </button>
         </div>
-
-        {/* SECTION: SKILLS */}
-        <div className="bg-gray-50 p-5 rounded-xl shadow-sm">
-          <h3 className="font-semibold text-lg mb-3 text-gray-700">
-            Skills
-          </h3>
-
-          <input
-            name="skills"
-            value={form.skills}
-            onChange={handleChange}
-            placeholder="React, Node, MongoDB..."
-            className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-indigo-400"
-          />
-        </div>
-
-        {/* SECTION: EXPERIENCE */}
-        <div className="bg-gray-50 p-5 rounded-xl shadow-sm">
-          <h3 className="font-semibold text-lg mb-3 text-gray-700">
-            Experience
-          </h3>
-
-          <textarea
-            name="experience"
-            value={form.experience}
-            onChange={handleChange}
-            placeholder="Describe your experience..."
-            className="w-full p-2 border rounded-lg h-24 focus:ring-2 focus:ring-indigo-400"
-          />
-        </div>
-
-        {/* SECTION: PROJECTS */}
-        <div className="bg-gray-50 p-5 rounded-xl shadow-sm">
-          <h3 className="font-semibold text-lg mb-3 text-gray-700">
-            Projects
-          </h3>
-
-          <textarea
-            name="projects"
-            value={form.projects}
-            onChange={handleChange}
-            placeholder="One project per line"
-            className="w-full p-2 border rounded-lg h-28 focus:ring-2 focus:ring-indigo-400"
-          />
-        </div>
-
-        {/*SAVE BUTTON */}
-        <button
-          onClick={handleSave}
-          disabled={loading}
-          className="w-full bg-indigo-600 text-white py-3 rounded-xl text-lg font-semibold hover:bg-indigo-700 transition"
-        >
-          {loading ? "Saving..." : "Save Resume"}
-        </button>
-      </div>
+      </motion.div>
     </div>
   );
 };
+
+/* 🔹 REUSABLE UI COMPONENTS */
+
+const Section = ({ title, children }) => (
+  <div>
+    <h3 className="text-lg font-extrabold text-[#3b3a4a] mb-3">
+      {title}
+    </h3>
+    {children}
+  </div>
+);
+
+const Input = ({ ...props }) => (
+  <input
+    {...props}
+    className="w-full px-5 py-4 rounded-2xl bg-indigo-100/30 shadow-md text-slate-700 outline-none focus:ring-2 focus:ring-[#9689ff]/20"
+  />
+);
+
+const Textarea = ({ ...props }) => (
+  <textarea
+    {...props}
+    className="w-full px-5 py-4 rounded-2xl bg-indigo-100/30 shadow-md text-slate-700 outline-none focus:ring-2 focus:ring-[#9689ff]/20 h-28"
+  />
+);
 
 export default ResumeBuilder;
