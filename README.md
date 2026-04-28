@@ -36,7 +36,7 @@ It analyzes user skills, identifies gaps based on target roles, and generates a 
 
 ## How It Works
 
-```id="flow001"
+```
 User → Input Skills / Resume  
      → AI Skill Analysis  
      → Skill Gap Detection  
@@ -73,7 +73,7 @@ User → Input Skills / Resume
 
 ```bash
 # Clone repo
-git clone https://github.com/
+https://github.com/bhumikamourya/AI-Career-Coach.git
 
 # Install frontend
 cd frontend
