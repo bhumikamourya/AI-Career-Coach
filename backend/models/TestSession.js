@@ -23,6 +23,37 @@ const testSessionSchema = new mongoose.Schema(
         selected: String
       }
     ],
+  //  UPDATED (supports string + object both)
+    aiQuestions: {
+      type: [
+        {
+          type: mongoose.Schema.Types.Mixed
+          /*
+            can be:
+            "What is JS?"
+            
+            OR
+            
+            {
+              type: "coding",
+              question: "Reverse string",
+              input: "hello",
+              output: "olleh"
+            }
+          */
+        }
+      ],
+      default: []
+    },
+     // User typed answers
+    aiAnswers: {
+      type: [String],
+      default: []
+    },
+     
+    apiKey: {
+      type: String
+    },
 
     // Track current question index (for resume after refresh)
     currentIndex: {

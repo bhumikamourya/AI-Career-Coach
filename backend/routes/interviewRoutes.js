@@ -2,8 +2,16 @@ const express = require("express");
 const router = express.Router();
 const protect = require("../middlewares/authMiddleware");
 
-const { evaluate } = require("../controllers/interviewController");
+// ❌ protect hata diya (temporary fix)
+const {
+  startInterview,
+  submitInterviewAnswers,
+  evaluateInterview
+} = require("../controllers/interviewController");
 
-router.post("/evaluate",protect, evaluate);
+// Routes
+router.post("/start",protect, startInterview);
+router.post("/submit",protect, submitInterviewAnswers);
+router.post("/evaluate",protect, evaluateInterview);
 
 module.exports = router;
