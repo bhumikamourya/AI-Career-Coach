@@ -22,7 +22,7 @@ export const fetchResume = createAsyncThunk(
     try {
       const res = await getResume();
 
-      return res.data;
+      return res;
     } catch (err) {
       return thunkAPI.rejectWithValue(
         err.response?.data?.message || "Failed to fetch resume"
@@ -38,7 +38,7 @@ export const saveResumeData = createAsyncThunk(
     try {
       const res = await saveResume(payload);
 
-      return res.data;
+      return res;
     } catch (err) {
       return thunkAPI.rejectWithValue(
         err.response?.data?.message || "Failed to save resume"
@@ -56,15 +56,15 @@ export const uploadResumeFile = createAsyncThunk(
 
       localStorage.setItem(
         "gap",
-        JSON.stringify(res.data.gap)
+        JSON.stringify(res.gap)
       );
 
       localStorage.setItem(
         "roadmap",
-        JSON.stringify(res.data.roadmap)
+        JSON.stringify(res.roadmap)
       );
 
-      return res.data;
+      return res;
     } catch (err) {
       return thunkAPI.rejectWithValue(
         err.response?.data?.message || "Upload failed"

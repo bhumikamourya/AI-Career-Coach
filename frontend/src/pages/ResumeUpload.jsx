@@ -3,6 +3,7 @@ import { uploadResume } from "../services/api";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { useDispatch } from "react-redux";
+import { uploadResumeFile } from "../redux/slices/resumeSlice";
 
 import {
   setSkillGap,
@@ -39,26 +40,32 @@ const ResumeUpload = () => {
     try {
       setLoading(true);
 
-      const res = await uploadResume(formData);
+       const result = await dispatch(uploadResumeFile(formData));
+       const data = result?.payload;
 
-      setText(res.data.text || "");
-      setExtractedSkills(res.data.extractedSkills || []);
+    if (!data) {
+      alert("Upload failed - no response");
+      return;
+    }
+
+      setText(data.text || "");
+      setExtractedSkills(data.extractedSkills || []);
 
       // ✅ Redux Update
-      dispatch(setSkillGap(res.data.gap || []));
-      dispatch(setRoadmap(res.data.roadmap || []));
-      dispatch(setAIInsight(res.data.aiInsight || ""));
-      dispatch(setCurrentPhase(res.data.currentPhase || "Resume Analysis"));
-      dispatch(setReadinessScore(res.data.readinessScore || 0));
+      dispatch(setSkillGap(data.gap || []));
+      dispatch(setRoadmap(data.roadmap || []));
+      dispatch(setAIInsight(data.aiInsight || ""));
+      dispatch(setCurrentPhase(data.currentPhase || "Resume Analysis"));
+      dispatch(setReadinessScore(data.readinessScore || 0));
 
       // ✅ Profile sync
-      if (res.data.user) {
-        dispatch(setProfileData(res.data.user));
+      if (data.user) {
+        dispatch(setProfileData(data.user));
       }
 
       // ✅ LocalStorage fallback
-      localStorage.setItem("gap", JSON.stringify(res.data.gap || []));
-      localStorage.setItem("roadmap", JSON.stringify(res.data.roadmap || []));
+      localStorage.setItem("gap", JSON.stringify(data.gap || []));
+      localStorage.setItem("roadmap", JSON.stringify(data.roadmap || []));
 
       alert("Resume Uploaded & Analyzed");
 
