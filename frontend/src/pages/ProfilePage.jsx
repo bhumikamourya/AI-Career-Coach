@@ -11,18 +11,18 @@ import {
   deleteSkillFromProfile
 } from "../redux/slices/profileSlice";
 
-import ProfileLayout from "../components/profile/ProfileLayout";
-import ProfileTopBar from "../components/profile/ProfileTopBar";
-import ProfileProgress from "../components/profile/ProfileProgress";
+import ProfileLayout from "../components/Profile/ProfileLayout";
+import ProfileTopBar from "../components/Profile/ProfileTopBar";
+import ProfileProgress from "../components/Profile/ProfileProgress";
 
-import AIInsightsCard from "../components/profile/left/AIInsightsCard";
-import ProfileCard from "../components/profile/left/ProfileCard";
-import SkillsCard from "../components/profile/left/SkillsCard";
+import AIInsightsCard from "../components/Profile/left/AIInsightsCard";
+import ProfileCard from "../components/Profile/left/ProfileCard";
+import SkillsCard from "../components/Profile/left/SkillsCard";
 
-import PreferencesCard from "../components/profile/right/PreferencesCard";
-import ProjectsCard from "../components/profile/right/ProjectsCard";
-import EducationCard from "../components/profile/right/EducationCard";
-import ResumeCard from "../components/profile/right/ResumeCard";
+import PreferencesCard from "../components/Profile/right/PreferencesCard";
+import ProjectsCard from "../components/Profile/right/ProjectsCard";
+import EducationCard from "../components/Profile/right/EducationCard";
+import ResumeCard from "../components/Profile/right/ResumeCard";
 
 import Loader from "../components/common/Loader";
 
