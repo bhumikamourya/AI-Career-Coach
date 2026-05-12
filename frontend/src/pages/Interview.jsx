@@ -166,7 +166,7 @@ const Interview = () => {
       try {
 
         await axios.post(
-          "http://localhost:5000/api/interview/save-score",
+          `${import.meta.env.VITE_API_URL}/api/interview/save-score`,
           {
             score: Math.round(avg)
           }
