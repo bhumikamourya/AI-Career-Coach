@@ -1,9 +1,22 @@
 import { useEffect, useState } from "react";
-import { saveResume, getResume } from "../services/api";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 
+import { useDispatch, useSelector } from "react-redux";
+
+import {
+  fetchResume,
+  saveResumeData
+} from "../redux/slices/resumeSlice";
+
 const ResumeBuilder = () => {
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+
+  const { resume, source, loading } = useSelector(
+    (state) => state.resume
+  );
+
   const [form, setForm] = useState({
     name: "",
     email: "",
@@ -12,71 +25,71 @@ const ResumeBuilder = () => {
     experience: "",
     projects: ""
   });
-  const [source, setSource] = useState("");
-  const [loading, setLoading] = useState(false);
-
-  const navigate = useNavigate();
 
   useEffect(() => {
-    fetchResume();
-  }, []);
+    dispatch(fetchResume());
+  }, [dispatch]);
 
-  const fetchResume = async () => {
-    try {
-      const res = await getResume();
-      const data = res.data.data;
-
-      setSource(res.data.source);
-
+  useEffect(() => {
+    if (resume) {
       setForm({
-        name: data.name || "",
-        email: data.email || "",
-        education: Array.isArray(data.education)
-          ? data.education[0]?.college || ""
-          : data.education || "",
-        skills: Array.isArray(data.skills)
-          ? data.skills.join(", ")
-          : data.skills || "",
-        experience: data.experience || "",
-        projects: Array.isArray(data.projects)
-          ? data.projects
+        name: resume.name || "",
+        email: resume.email || "",
+
+        education: Array.isArray(resume.education)
+          ? resume.education[0]?.college || ""
+          : resume.education || "",
+
+        skills: Array.isArray(resume.skills)
+          ? resume.skills.join(", ")
+          : resume.skills || "",
+
+        experience: resume.experience || "",
+
+        projects: Array.isArray(resume.projects)
+          ? resume.projects
               .map((p) => {
                 let line = p.title || "";
-                if (p.description) line += " - " + p.description;
+
+                if (p.description) {
+                  line += " - " + p.description;
+                }
+
                 return line;
               })
               .join("\n")
-          : data.projects || ""
+          : resume.projects || ""
       });
-    } catch (err) {
-      console.error(err);
     }
-  };
+  }, [resume]);
 
   const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+    setForm({
+      ...form,
+      [e.target.name]: e.target.value
+    });
   };
 
   const handleSave = async () => {
     try {
-      setLoading(true);
-
       const payload = {
         ...form,
+
         skills: form.skills
           .split(",")
           .map((s) => s.trim())
           .filter(Boolean)
       };
 
-      await saveResume(payload);
+      await dispatch(saveResumeData(payload)).unwrap();
+
       alert("✅ Resume saved successfully");
+
       navigate("/profile");
     } catch (err) {
       console.error(err);
+
       alert("❌ Error saving resume");
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -86,6 +99,7 @@ const ResumeBuilder = () => {
       {/* Background Glow */}
       <div className="absolute inset-0 z-0 opacity-60 pointer-events-none">
         <div className="absolute top-[-5%] left-[-10%] w-[500px] h-[500px] bg-[#d9d4ff] rounded-full blur-[110px]" />
+
         <div className="absolute bottom-[-10%] right-[-5%] w-[500px] h-[500px] bg-[#ffecde] rounded-full blur-[110px]" />
       </div>
 
@@ -97,6 +111,7 @@ const ResumeBuilder = () => {
 
         {/* HEADER */}
         <div className="flex justify-between items-center">
+
           <div>
             <h2 className="text-4xl font-extrabold text-[#3b3a4a]">
               Resume Builder
@@ -133,29 +148,62 @@ const ResumeBuilder = () => {
           {/* BASIC INFO */}
           <Section title="Basic Information">
             <div className="grid md:grid-cols-2 gap-4">
-              <Input name="name" value={form.name} onChange={handleChange} placeholder="Full Name" />
-              <Input name="email" value={form.email} onChange={handleChange} placeholder="Email" />
+
+              <Input
+                name="name"
+                value={form.name}
+                onChange={handleChange}
+                placeholder="Full Name"
+              />
+
+              <Input
+                name="email"
+                value={form.email}
+                onChange={handleChange}
+                placeholder="Email"
+              />
+
             </div>
           </Section>
 
           {/* EDUCATION */}
           <Section title="Education">
-            <Input name="education" value={form.education} onChange={handleChange} placeholder="College / Degree" />
+            <Input
+              name="education"
+              value={form.education}
+              onChange={handleChange}
+              placeholder="College / Degree"
+            />
           </Section>
 
           {/* SKILLS */}
           <Section title="Skills">
-            <Input name="skills" value={form.skills} onChange={handleChange} placeholder="React, Node, MongoDB..." />
+            <Input
+              name="skills"
+              value={form.skills}
+              onChange={handleChange}
+              placeholder="React, Node, MongoDB..."
+            />
           </Section>
 
           {/* EXPERIENCE */}
           <Section title="Experience">
-            <Textarea name="experience" value={form.experience} onChange={handleChange} placeholder="Describe your experience..." />
+            <Textarea
+              name="experience"
+              value={form.experience}
+              onChange={handleChange}
+              placeholder="Describe your experience..."
+            />
           </Section>
 
           {/* PROJECTS */}
           <Section title="Projects">
-            <Textarea name="projects" value={form.projects} onChange={handleChange} placeholder="One project per line" />
+            <Textarea
+              name="projects"
+              value={form.projects}
+              onChange={handleChange}
+              placeholder="One project per line"
+            />
           </Section>
 
           {/* SAVE BUTTON */}
@@ -166,6 +214,7 @@ const ResumeBuilder = () => {
           >
             {loading ? "Saving Resume..." : "Save Resume"}
           </button>
+
         </div>
       </motion.div>
     </div>
@@ -179,6 +228,7 @@ const Section = ({ title, children }) => (
     <h3 className="text-lg font-extrabold text-[#3b3a4a] mb-3">
       {title}
     </h3>
+
     {children}
   </div>
 );

@@ -1,207 +1,341 @@
 import { useEffect, useState } from "react";
+import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import API, { getDashboardData } from "../services/api";
+import { useDispatch } from "react-redux";
+
+import {
+  getDashboardData,
+  evaluate
+} from "../services/api";
 
 const Interview = () => {
+
   const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   const [questions, setQuestions] = useState([]);
-  const [sessionId, setSessionId] = useState(null);
-
   const [index, setIndex] = useState(0);
+
   const [answer, setAnswer] = useState("");
+
   const [answers, setAnswers] = useState([]);
 
   const [result, setResult] = useState(null);
 
   const [loading, setLoading] = useState(false);
-  const [starting, setStarting] = useState(true);
+
   const [blocked, setBlocked] = useState(false);
+
+  const [finalScore, setFinalScore] = useState([]);
+
+  const [starting, setStarting] = useState(true);
 
   useEffect(() => {
     initInterview();
   }, []);
 
   // ======================
-  // 🚀 INIT
+  // INIT
   // ======================
+
   const initInterview = async () => {
+
     try {
+
       const dash = await getDashboardData();
 
-      if (dash.data.readinessScore < 70) {
+      const readiness =
+        dash.readinessScore || 0;
+
+      const weakSkills =
+        dash.skillGap?.weakSkills || [];
+
+      // LOCK INTERVIEW
+
+      if (readiness < 70) {
+
         setBlocked(true);
         return;
+
       }
 
-      const user = JSON.parse(localStorage.getItem("user"));
+      // DYNAMIC QUESTIONS
 
-      const res = await API.post(
-        "/interview/start?refresh=true",
-        { role: user?.targetRole }
-      );
+      const dynamicQuestions =
+        weakSkills.length > 0
+          ? weakSkills.map(
+              (skill) =>
+                `Explain ${skill} with real-world example.`
+            )
+          : [
+              "Explain your main project.",
+              "What are your strengths?",
+              "Explain a challenging bug you solved.",
+            ];
 
-      setQuestions(res.data.questions || []);
-      setSessionId(res.data.sessionId);
+      setQuestions(dynamicQuestions);
 
     } catch (err) {
+
       console.error(err);
       alert("Failed to start interview");
+
     } finally {
+
       setStarting(false);
+
     }
   };
 
   const currentQuestion = questions[index];
 
   // ======================
-  // 🧠 SAFE PARSER
+  // SUBMIT ANSWER
   // ======================
-  const getQuestionText = (q) => {
-    if (!q) return "Invalid question";
-    if (typeof q === "string") return q;
-    return q?.question?.text || q?.question || q?.text || "Invalid question";
-  };
 
-  // ======================
-  // ➡️ NEXT / SAVE ANSWER
-  // ======================
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
+
     if (!answer.trim()) {
       alert("Write your answer first");
       return;
     }
 
-    const updatedAnswers = [...answers];
-    updatedAnswers[index] = answer;
-    setAnswers(updatedAnswers);
-
-    setAnswer("");
-
-    if (index < questions.length - 1) {
-      setIndex(index + 1);
-    } else {
-      finishInterview(updatedAnswers);
-    }
-  };
-
-  // ======================
-  // 🏁 FINAL SUBMIT + EVALUATE
-  // ======================
-  const finishInterview = async (finalAnswers) => {
     try {
+
       setLoading(true);
 
-      await API.post("/interview/submit", {
-        sessionId,
-        answers: finalAnswers
+      // SAVE ANSWER LOCALLY
+
+      const updatedAnswers = [...answers];
+
+      updatedAnswers[index] = answer;
+
+      setAnswers(updatedAnswers);
+
+      // EVALUATE
+
+      const res = await evaluate({
+        question: currentQuestion,
+        answer
       });
 
-      const res = await API.post("/interview/evaluate", {
-        sessionId
-      });
+      setResult(res);
 
-      setResult(res.data);
+      // STORE SCORE
+
+      setFinalScore((prev) => [
+        ...prev,
+        res.score || 0
+      ]);
 
     } catch (err) {
+
       console.error(err);
       alert("Evaluation failed");
+
     } finally {
+
       setLoading(false);
+
     }
   };
 
   // ======================
-  // 🔒 BLOCK UI
+  // NEXT QUESTION
   // ======================
+
+  const handleNext = async () => {
+
+    setAnswer("");
+    setResult(null);
+
+    // NEXT QUESTION
+
+    if (index < questions.length - 1) {
+
+      setIndex((prev) => prev + 1);
+
+    } else {
+
+      // FINAL SCORE
+
+      const avg =
+        finalScore.reduce((a, b) => a + b, 0) /
+        finalScore.length;
+
+      try {
+
+        await axios.post(
+          "http://localhost:5000/api/interview/save-score",
+          {
+            score: Math.round(avg)
+          }
+        );
+
+        alert(
+          `Interview Completed! Final Score: ${Math.round(avg)}`
+        );
+
+        navigate("/");
+
+      } catch (err) {
+
+        console.error(err);
+
+      }
+    }
+  };
+
+  // ======================
+  // BLOCKED UI
+  // ======================
+
   if (blocked) {
+
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="bg-white p-6 rounded shadow text-center">
-          <h2 className="text-red-500 font-bold text-xl">
+
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+
+        <div className="bg-white shadow-xl p-6 rounded-xl text-center">
+
+          <h2 className="text-xl font-bold text-red-500">
             Interview Locked
           </h2>
-          <p>Reach 70% readiness first</p>
-          <button onClick={() => navigate("/")}>Go Back</button>
+
+          <p className="mt-2 text-gray-600">
+            Reach at least <b>70% readiness</b> to unlock interview
+          </p>
+
+          <button
+            onClick={() => navigate("/")}
+            className="mt-4 bg-blue-500 text-white px-4 py-2 rounded"
+          >
+            Go Back
+          </button>
+
         </div>
+
       </div>
     );
   }
 
-  if (starting) return <p className="p-6">Starting interview...</p>;
-  if (!currentQuestion) return <p className="p-6">Loading...</p>;
+  // ======================
+  // LOADING
+  // ======================
+
+  if (starting || !currentQuestion) {
+
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <p>Loading Interview...</p>
+      </div>
+    );
+  }
 
   // ======================
-  // 🎯 UI
+  // UI
   // ======================
+
   return (
+
     <div className="min-h-screen bg-gray-50 p-6">
+
       <div className="max-w-3xl mx-auto">
 
         {/* HEADER */}
-        <div className="bg-white p-5 rounded shadow mb-4">
-          <h2 className="text-2xl font-bold">AI Mock Interview</h2>
-          <p>Question {index + 1} / {questions.length}</p>
+
+        <div className="bg-white p-5 rounded-xl shadow mb-4">
+
+          <h2 className="text-2xl font-bold">
+            AI Mock Interview
+          </h2>
+
+          <p className="text-gray-500">
+            Question {index + 1} / {questions.length}
+          </p>
+
         </div>
 
         {/* QUESTION */}
-        <div className="bg-white p-5 rounded shadow mb-4">
-          <p className="font-semibold text-lg">
-            {getQuestionText(currentQuestion)}
+
+        <div className="bg-white p-6 rounded-xl shadow mb-4">
+
+          <p className="text-lg font-semibold">
+            {currentQuestion}
           </p>
+
         </div>
 
         {/* ANSWER */}
+
         <textarea
           value={answer}
-          onChange={(e) => setAnswer(e.target.value)}
+          onChange={(e) =>
+            setAnswer(e.target.value)
+          }
           placeholder="Write your answer..."
           className="w-full border p-3 rounded h-32"
         />
 
-        {/* BUTTON */}
+        {/* ACTION */}
+
         {!result ? (
+
           <button
             onClick={handleSubmit}
             disabled={loading}
             className="mt-3 bg-blue-600 text-white px-4 py-2 rounded"
           >
-            {index === questions.length - 1
-              ? "Finish Interview"
-              : "Next Question"}
+            {loading
+              ? "Evaluating..."
+              : "Submit Answer"}
           </button>
+
         ) : (
+
           <div className="bg-green-100 p-4 mt-4 rounded">
 
-            <h3 className="font-bold text-lg">
-              {result.message}
+            <h3 className="font-semibold text-lg">
+              Score: {result.score}/100
             </h3>
 
-            <p className="mt-2 whitespace-pre-line">
-              {result.feedback}
-            </p>
+            <div className="mt-2">
+
+              <p className="font-medium">
+                Feedback:
+              </p>
+
+              {(result.feedback || []).map(
+                (f, i) => (
+                  <p key={i}>• {f}</p>
+                )
+              )}
+
+            </div>
 
             <button
-              onClick={() => navigate("/")}
+              onClick={handleNext}
               className="mt-4 bg-black text-white px-4 py-2 rounded"
             >
-              Go Home
+              {index < questions.length - 1
+                ? "Next Question"
+                : "Finish Interview"}
             </button>
 
           </div>
         )}
 
         {/* EXIT */}
-        {!result && (
-          <button
-            onClick={() => navigate("/dashboard")}
-            className="mt-4 bg-gray-500 text-white px-4 py-2 rounded"
-          >
-            Exit
-          </button>
-        )}
+
+        <button
+          onClick={() => navigate("/")}
+          className="mt-4 ml-3 bg-gray-500 text-white px-4 py-2 rounded"
+        >
+          Exit Interview
+        </button>
 
       </div>
+
     </div>
   );
 };

@@ -1,6 +1,13 @@
-import { useEffect, useState, useRef } from "react";
-import { getQuestions, submitAnswers, saveAnswer } from "../services/api";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useRef, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+
+import {
+  fetchPracticeQuestions,
+  submitPractice,
+  clearPracticeState,
+} from "../redux/slices/practiceSlice";
+
+import { saveAnswer } from "../services/api";
 
 import PracticeHeader from "../components/practice/PracticeHeader";
 import QuestionCard from "../components/practice/QuestionCard";
@@ -9,88 +16,115 @@ import NavigationButtons from "../components/practice/NavigationButtons";
 import ResultView from "../components/practice/ResultView";
 
 const Practice = () => {
-  const [questions, setQuestions] = useState([]);
+  const dispatch = useDispatch();
+
+  const {
+    questions,
+    result,
+    loading,
+  } = useSelector((state) => state.practice);
+
   const [index, setIndex] = useState(0);
   const [selectedAnswers, setSelectedAnswers] = useState({});
-  const [result, setResult] = useState(null);
-  const [submitting, setSubmitting] = useState(false); //  NEW
+  const [submitting, setSubmitting] = useState(false);
   const [blocked, setBlocked] = useState(null);
 
   const saveTimeout = useRef(null);
-  const navigate = useNavigate();
 
   useEffect(() => {
-    fetchQuestions();
+
+    // ✅ IMPORTANT FIX
+    // old result remove
+    dispatch(clearPracticeState());
+
+    loadQuestions();
+
   }, []);
 
-  const fetchQuestions = async () => {
+  const loadQuestions = async () => {
     try {
-      const res = await getQuestions();
+      const res = await dispatch(
+        fetchPracticeQuestions()
+      ).unwrap();
 
-      setQuestions(res.data.questions);
-      setIndex(res.data.currentIndex || 0);
+      setIndex(res.currentIndex || 0);
+
       const formatted = {};
-      (res.data.answers || []).forEach(a => {
+
+      (res.answers || []).forEach((a) => {
         formatted[a.questionId] = a.selected;
       });
+
       setSelectedAnswers(formatted);
 
     } catch (err) {
-      if (err.response?.status === 403) {
-        setBlocked(err.response.data);
-      } else {
-        console.error(err);
+
+      console.error(err);
+
+      if (err?.phase) {
+        setBlocked(err);
       }
     }
   };
 
-
   const current = questions[index];
 
   const handleOptionClick = (questionId, option) => {
-    setSelectedAnswers(prev => ({
+
+    setSelectedAnswers((prev) => ({
       ...prev,
-      [questionId]: option
+      [questionId]: option,
     }));
 
     clearTimeout(saveTimeout.current);
 
     saveTimeout.current = setTimeout(() => {
-      saveAnswer({ questionId, selected: option });
+
+      saveAnswer({
+        questionId,
+        selected: option,
+      });
+
     }, 300);
   };
 
   const handlePrev = () => {
-  if (index > 0) {
-    setIndex((prev) => prev - 1);
-  }
-};
+    if (index > 0) {
+      setIndex((prev) => prev - 1);
+    }
+  };
 
-  // NEXT BUTTON
   const handleNext = () => {
     if (index < questions.length - 1) {
       setIndex((prev) => prev + 1);
     }
   };
 
-  // SUBMIT TEST (FIXED)
   const handleSubmit = async () => {
-    if (submitting) return; //  prevent double click
+
+    if (submitting) return;
 
     try {
+
       setSubmitting(true);
-      const res = await submitAnswers();
-      setResult(res.data);
+
+      await dispatch(
+        submitPractice()
+      ).unwrap();
 
     } catch (err) {
+
       console.error(err);
       alert("Submission failed");
+
     } finally {
+
       setSubmitting(false);
+
     }
   };
 
-   // BLOCKED STATE
+  // BLOCKED STATE
   if (blocked) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#f3f4fb]">
@@ -101,12 +135,19 @@ const Practice = () => {
     );
   }
 
-   if (result) {
+  // RESULT PAGE
+  if (result) {
     return <ResultView result={result} />;
   }
 
-   if (!current) return <p>Loading...</p>;
-
+  // LOADING
+  if (loading || !current) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <p>Loading...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#f3f4fb] p-6">
@@ -126,7 +167,9 @@ const Practice = () => {
         <OptionsList
           options={current.options}
           selected={selectedAnswers[current._id]}
-          onSelect={(opt) => handleOptionClick(current._id, opt)}
+          onSelect={(opt) =>
+            handleOptionClick(current._id, opt)
+          }
         />
 
         <NavigationButtons

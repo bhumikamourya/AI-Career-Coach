@@ -2,6 +2,17 @@ import { useState } from "react";
 import { uploadResume } from "../services/api";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
+import { useDispatch } from "react-redux";
+
+import {
+  setSkillGap,
+  setRoadmap,
+  setAIInsight,
+  setCurrentPhase,
+  setReadinessScore,
+} from "../redux/slices/dashboardSlice";
+
+import { setProfileData } from "../redux/slices/profileSlice";
 
 const ResumeUpload = () => {
   const [file, setFile] = useState(null);
@@ -10,7 +21,7 @@ const ResumeUpload = () => {
   const [extractedSkills, setExtractedSkills] = useState([]);
 
   const navigate = useNavigate();
-
+  const dispatch = useDispatch();
 
   const handleFileChange = (e) => {
     setFile(e.target.files[0]);
@@ -27,19 +38,31 @@ const ResumeUpload = () => {
 
     try {
       setLoading(true);
+
       const res = await uploadResume(formData);
 
-      setText(res.data.text);
-      setExtractedSkills(res.data.extractedSkills);
+      setText(res.data.text || "");
+      setExtractedSkills(res.data.extractedSkills || []);
 
-      localStorage.setItem("gap", JSON.stringify(res.data.gap));
-      localStorage.setItem("roadmap", JSON.stringify(res.data.roadmap));
+      // ✅ Redux Update
+      dispatch(setSkillGap(res.data.gap || []));
+      dispatch(setRoadmap(res.data.roadmap || []));
+      dispatch(setAIInsight(res.data.aiInsight || ""));
+      dispatch(setCurrentPhase(res.data.currentPhase || "Resume Analysis"));
+      dispatch(setReadinessScore(res.data.readinessScore || 0));
+
+      // ✅ Profile sync
+      if (res.data.user) {
+        dispatch(setProfileData(res.data.user));
+      }
+
+      // ✅ LocalStorage fallback
+      localStorage.setItem("gap", JSON.stringify(res.data.gap || []));
+      localStorage.setItem("roadmap", JSON.stringify(res.data.roadmap || []));
 
       alert("Resume Uploaded & Analyzed");
 
       navigate("/profile");
-      // console.log("GAP:", res.data.gap);
-      // console.log("ROADMAP:", res.data.roadmap);
     } catch (err) {
       console.error(err);
       alert("Upload failed");
@@ -49,7 +72,7 @@ const ResumeUpload = () => {
   };
 
   return (
-   <div className="min-h-screen bg-[#f3f4fb] flex items-center justify-center p-6 relative overflow-hidden">
+    <div className="min-h-screen bg-[#f3f4fb] flex items-center justify-center p-6 relative overflow-hidden">
 
       {/* Background Glow */}
       <div className="absolute inset-0 z-0 opacity-60 pointer-events-none">
@@ -115,6 +138,7 @@ const ResumeUpload = () => {
             <h3 className="font-bold text-[#3b3a4a] mb-2">
               Extracted Content
             </h3>
+
             <p className="text-xs text-slate-600 whitespace-pre-line">
               {text}
             </p>
@@ -148,7 +172,6 @@ const ResumeUpload = () => {
             </p>
           </motion.div>
         )}
-
       </motion.div>
     </div>
   );

@@ -1,10 +1,34 @@
 const mongoose = require("mongoose");
 
-const cacheSchema = new mongoose.Schema({
-  cacheKey: String,
-  role: String,
-  skills: [String],
-  questions: Array
-}, { timestamps: true });
+const cacheSchema = new mongoose.Schema(
+  {
+    cacheKey: {
+      type: String,
+      required: true,
+      unique: true
+    },
 
-module.exports = mongoose.model("AIInterviewCache", cacheSchema);
+    role: {
+      type: String,
+      required: true
+    },
+
+    skills: {
+      type: [String],
+      default: []
+    },
+
+    questions: {
+      type: Array,
+      default: []
+    }
+  },
+  {
+    timestamps: true
+  }
+);
+
+module.exports = mongoose.model(
+  "AIInterviewCache",
+  cacheSchema
+);

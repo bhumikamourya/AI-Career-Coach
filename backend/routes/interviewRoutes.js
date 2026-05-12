@@ -2,7 +2,6 @@ const express = require("express");
 const router = express.Router();
 const protect = require("../middlewares/authMiddleware");
 
-// ❌ protect hata diya (temporary fix)
 const {
   startInterview,
   submitInterviewAnswers,

@@ -1,5 +1,3 @@
-// models/TestSession.js
-
 const mongoose = require("mongoose");
 
 const testSessionSchema = new mongoose.Schema(
