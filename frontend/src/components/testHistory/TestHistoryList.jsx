@@ -37,16 +37,16 @@ const TestHistoryList = ({ history, onSelect }) => {
           animate={{ opacity: 1, y: 0 }}
           className="bg-white/50 backdrop-blur-xl border border-white/60 p-10 rounded-[2.5rem] shadow-xl text-center"
         >
+
+           <div className="w-24 h-24 mx-auto rounded-full bg-gradient-to-tr from-[#9689ff] to-[#ffbe94] flex items-center justify-center text-4xl shadow-lg mb-6">
+
+              📜
+
+            </div>
           <p className="text-slate-400 text-sm font-semibold italic mb-4">
             No test attempts yet
           </p>
 
-          <button
-            onClick={() => navigate("/practice")}
-            className="px-6 py-3 bg-gradient-to-r from-[#818cf8] to-[#a78bfa] text-white font-bold rounded-xl shadow-lg hover:brightness-105 transition"
-          >
-            Take Your First Test
-          </button>
         </motion.div>
       ) : (
         <div className="space-y-6">

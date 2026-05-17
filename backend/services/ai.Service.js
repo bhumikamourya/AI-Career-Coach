@@ -1,112 +1,252 @@
+require("dotenv").config();
+
 const axios = require("axios");
 
-// ✅ All keys (3 ya jitni ho)
+// API KEYS
+
 const keys = [
   process.env.GEMINI_KEY_1,
   process.env.GEMINI_KEY_2,
   process.env.GEMINI_KEY_3
 ].filter(Boolean);
 
-// ❌ Agar ek bhi key nahi hai → system fail hona chahiye
-if (keys.length === 0) {
-  throw new Error("No Gemini API keys found in environment variables");
+if (!keys.length) {
+  throw new Error("❌ No Gemini API keys found");
 }
 
-// ✅ Random key
-function getRandomKey() {
-  return keys[Math.floor(Math.random() * keys.length)];
+// MODELS
+
+const MODELS = [
+  "gemini-2.5-flash-lite",
+  "gemini-2.0-flash-lite",
+  "gemini-2.0-flash"
+];
+
+// KEY USAGE TRACKING
+
+let keyIndex = 0;
+
+// temporarily blocked keys
+const blockedKeys = new Map();
+
+/*
+blockedKeys structure:
+
+{
+  API_KEY : unblockTimestamp
+}
+*/
+
+// GET AVAILABLE KEY
+
+function getAvailableKey() {
+  const now = Date.now();
+
+  for (let i = 0; i < keys.length; i++) {
+
+    const index = (keyIndex + i) % keys.length;
+
+    const key = keys[index];
+
+    const blockedUntil = blockedKeys.get(key);
+
+    // skip blocked key
+    if (blockedUntil && blockedUntil > now) {
+      continue;
+    }
+
+    keyIndex = (index + 1) % keys.length;
+
+    return key;
+  }
+
+  return null;
 }
 
-// ✅ Core request function with fallback
-async function callGemini(prompt, apiKey) {
-  const keyToUse = apiKey || getRandomKey();
+// WAIT FUNCTION
+
+function wait(ms) {
+  return new Promise((resolve) =>
+    setTimeout(resolve, ms)
+  );
+}
+
+// EXTRACT RETRY TIME
+
+function extractRetryTime(message) {
+
+  if (!message) return 15000;
+
+  const match = message.match(
+    /retry in ([\d.]+)s/i
+  );
+
+  if (match && match[1]) {
+    return Math.ceil(
+      parseFloat(match[1]) * 1000
+    );
+  }
+
+  return 15000;
+}
+
+// GEMINI CALL
+
+async function callGemini(
+  prompt,
+  retry = 0
+) {
+
+  // max retries
+  if (retry >= 3) {
+    throw new Error(
+      "❌ All Gemini retries failed"
+    );
+  }
+
+  // get working key
+  const key = getAvailableKey();
+
+  // if all keys blocked
+  if (!key) {
+
+    console.log(
+      "⏳ All keys are temporarily blocked..."
+    );
+
+    await wait(20000);
+
+    return callGemini(
+      prompt,
+      retry + 1
+    );
+  }
+
+  // rotate model
+  const model =
+    MODELS[retry % MODELS.length];
+
+  console.log("🤖 AI CALL STARTED");
+  console.log("MODEL:", model);
+  console.log("RETRY:", retry);
 
   try {
+
     const res = await axios.post(
-      `https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash:generateContent?key=${keyToUse}`,
+      `https://generativelanguage.googleapis.com/v1/models/${model}:generateContent?key=${key}`,
       {
         contents: [
           {
-            parts: [{ text: prompt }]
+            parts: [
+              {
+                text: prompt
+              }
+            ]
           }
-        ]
+        ],
+
+        generationConfig: {
+          temperature: 0.3,
+          topP: 0.9,
+          maxOutputTokens: 2048
+        }
+      },
+      {
+        timeout: 45000
       }
     );
 
-    return res.data?.candidates?.[0]?.content?.parts?.[0]?.text || "";
+    const text =
+      res.data?.candidates?.[0]?.content?.parts?.[0]?.text || "";
 
-  } catch (err) {
-    console.error(`❌ Key failed: ${keyToUse}`);
+    console.log("✅ AI SUCCESS");
 
-    // 🔥 fallback: try another key
-    const remainingKeys = keys.filter(k => k !== keyToUse);
-
-    if (remainingKeys.length === 0) {
-      console.error("🚨 All API keys failed");
-      throw new Error("All Gemini API keys failed");
+    if (!text.trim()) {
+      throw new Error(
+        "Empty AI response"
+      );
     }
 
-    const newKey = remainingKeys[Math.floor(Math.random() * remainingKeys.length)];
-    return callGemini(prompt, newKey);
+    return text;
+
+  } catch (err) {
+
+    console.log("❌ GEMINI ERROR");
+
+    const errorData =
+      err.response?.data || err.message;
+
+    console.log(errorData);
+
+    // HANDLE 429 QUOTA ERROR
+    if (
+      err.response?.status === 429
+    ) {
+
+      const retryAfter =
+        extractRetryTime(
+          errorData?.error?.message
+        );
+
+      // block current key
+      blockedKeys.set(
+        key,
+        Date.now() + retryAfter
+      );
+
+      await wait(retryAfter);
+
+      return callGemini(
+        prompt,
+        retry + 1
+      );
+    }
+
+    // HANDLE SERVER ERRORS
+
+    if (
+      err.response?.status >= 500
+    ) {
+
+
+      await wait(3000);
+
+      return callGemini(
+        prompt,
+        retry + 1
+      );
+    }
+
+    // HANDLE TIMEOUT
+
+    if (
+      err.code === "ECONNABORTED"
+    ) {
+
+      await wait(2000);
+
+      return callGemini(
+        prompt,
+        retry + 1
+      );
+    }
+
+    // OTHER ERRORS
+
+    if (retry < 5) {
+
+      await wait(2000);
+
+      return callGemini(
+        prompt,
+        retry + 1
+      );
+    }
+
+    throw err;
   }
 }
 
-//  PUBLIC FUNCTION
-exports.askAI = async (prompt, apiKey) => {
-  return await callGemini(prompt, apiKey);
-};
+// EXPORTS
 
-// 👉 Generate Questions
-exports.generateQuestions = async (role, skills = [], apiKey) => {
-  const weakPart =
-    skills.length > 0
-      ? `Give EXTRA focus to these weak skills: ${skills.join(", ")}.`
-      : "";
-
-  const prompt = `
-You are an expert technical interviewer.
-
-Generate EXACTLY 5 interview questions for the role: ${role}.
-
-Requirements:
-- Cover core topics required for this role (balanced coverage)
-- ${weakPart}
-- No generic HR questions
-- Questions should be practical and interview-level
-
-Return ONLY in JSON array:
-["Q1","Q2","Q3","Q4","Q5"]
-`;
-
-   let data = await callGemini(prompt, apiKey);
-
-  try {
-    data = JSON.parse(data);
-  } catch {
-    data = data
-      .split("\n")
-      .map(q => q.replace(/^\d+[\).\s-]*/, "").trim())
-      .filter(q => q.length > 5);
-  }
-
-  return data.slice(0, 5);
-};
-// 👉 Evaluate Answers
-exports.evaluateAnswers = async (qaList, apiKey) => {
-  const prompt = `
-Evaluate these interview answers:
-
-${JSON.stringify(qaList)}
-
-Return:
-- Correct answers
-- Feedback
-- Ready or Not Ready
-- Improvement tips
-`;
-
-   return await callGemini(prompt, apiKey);
-};
-
-// 👉 export key function
-exports.getRandomKey = getRandomKey;
+exports.askAI = callGemini;

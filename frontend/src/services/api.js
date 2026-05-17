@@ -4,7 +4,7 @@ const API = axios.create({
   baseURL: `${import.meta.env.VITE_API_URL}/api`,
 });
 
-/* ================= REQUEST INTERCEPTOR ================= */
+/*  REQUEST INTERCEPTOR  */
 
 API.interceptors.request.use((req) => {
   const token = localStorage.getItem("token");
@@ -16,7 +16,7 @@ API.interceptors.request.use((req) => {
   return req;
 });
 
-/* ================= AUTH ================= */
+/*  AUTH  */
 
 export const registerUser = async (data) => {
   const res = await API.post("/auth/register", data);
@@ -39,7 +39,7 @@ export const updatePassword = async (data) => {
   return res.data;
 };
 
-/* ================= ROLES ================= */
+/*  ROLES  */
 
 export const getRoles = async () => {
   const res = await API.get("/roles");
@@ -47,7 +47,7 @@ export const getRoles = async () => {
   return res.data;
 };
 
-/* ================= PROFILE ================= */
+/*  PROFILE  */
 
 export const getProfile = async () => {
   const res = await API.get("/user/profile");
@@ -64,7 +64,7 @@ export const updateProfile = async (data) => {
   return res.data;
 };
 
-/* ================= RESUME ================= */
+/*  RESUME  */
 
 export const uploadResume = async (
   formData
@@ -100,7 +100,7 @@ export const getResume = async () => {
   return res.data;
 };
 
-/* ================= PRACTICE ================= */
+/*  PRACTICE  */
 
 /* GET QUESTIONS */
 
@@ -146,7 +146,7 @@ export const getTestHistory = async () => {
   return res.data;
 };
 
-/* ================= PROGRESS ================= */
+/*  PROGRESS  */
 
 export const markProgress = async (
   data
@@ -159,7 +159,7 @@ export const markProgress = async (
   return res.data;
 };
 
-/* ================= DASHBOARD ================= */
+/*  DASHBOARD  */
 
 export const getDashboardData =
   async () => {
@@ -170,38 +170,32 @@ export const getDashboardData =
     return res.data;
   };
 
-/* ================= INTERVIEW ================= */
+/*  INTERVIEW  */
 
 export const generateInterview =
   async (data) => {
-    const res = await API.post(
-      "/interview",
-      data
-    );
+    console.log("SENDING:", data);
 
+    const res = await API.post("/interview/start",data);
     return res.data;
   };
 
-export const submitInterview =
-  async (data) => {
-    const res = await API.post(
-      "/interview/submit",
-      data
-    );
-
-    return res.data;
-  };
-
-export const evaluate = async (data) => {
-  const res = await API.post(
-    "/interview/evaluate",
-    data
-  );
-
+export const submitInterview = async (data) => {
+  const res = await API.post("/interview/submit", data);
   return res.data;
 };
 
-/* ================= RESPONSE INTERCEPTOR ================= */
+export const getInterviewResult = async (sessionId) => {
+  const res = await API.get(`/interview/result/${sessionId}`);
+  return res.data;
+};
+
+export const getInterviewHistory = async () => {
+  const res = await API.get("/interview/history");
+  return res.data;
+};
+
+/*  RESPONSE INTERCEPTOR  */
 
 API.interceptors.response.use(
   (res) => res,

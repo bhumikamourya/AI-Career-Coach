@@ -1,14 +1,37 @@
-require("dotenv").config(); // 🔥 MUST BE FIRST LINE
-const axios = require("axios");
+// require("dotenv").config();
 
-(async () => {
-  try {
-    const res = await axios.get(
-      `https://generativelanguage.googleapis.com/v1/models?key=${process.env.GEMINI_API_KEY}`
-    );
+// const axios = require("axios");
 
-    console.log(res.data.models.map(m => m.name));
-  } catch (err) {
-    console.log(err.response?.data || err.message);
-  }
-})();
+// const API_KEY =
+//   process.env.GEMINI_KEY_1;
+
+// (async () => {
+
+//   try {
+
+//     console.log("🚀 CHECKING AVAILABLE MODELS...\n");
+
+//     const res = await axios.get(
+//       `https://generativelanguage.googleapis.com/v1/models?key=${API_KEY}`
+//     );
+
+//     const models =
+//       res.data.models || [];
+
+//     console.log("✅ AVAILABLE MODELS:\n");
+
+//     models.forEach((m) => {
+//       console.log(m.name);
+//     });
+
+//   } catch (err) {
+
+//     console.log("❌ ERROR\n");
+
+//     console.log(
+//       err.response?.data ||
+//       err.message
+//     );
+//   }
+
+// })();

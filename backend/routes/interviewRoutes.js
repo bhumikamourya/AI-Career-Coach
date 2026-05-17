@@ -5,12 +5,14 @@ const protect = require("../middlewares/authMiddleware");
 const {
   startInterview,
   submitInterviewAnswers,
-  evaluateInterview
+  getInterviewResult,
+  getInterviewHistory
 } = require("../controllers/interviewController");
 
-// Routes
-router.post("/start",protect, startInterview);
-router.post("/submit",protect, submitInterviewAnswers);
-router.post("/evaluate",protect, evaluateInterview);
+router.post("/start", protect, startInterview);
+router.post("/submit", protect, submitInterviewAnswers);
+router.get("/result/:sessionId", protect, getInterviewResult);
+
+router.get("/history", protect, getInterviewHistory);
 
 module.exports = router;

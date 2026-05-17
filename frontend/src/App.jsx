@@ -6,9 +6,12 @@ import ResumeUpload from "./pages/ResumeUpload";
 import ResumeBuilder from "./pages/ResumeBuilder";
 import Practice from "./pages/Practice";
 import Interview from "./pages/Interview";
+import InterviewResult from "./pages/InterviewResult";
 import ProfilePage from "./pages/ProfilePage";
 import TestHistory from "./pages/TestHistory";
 import Home from "./pages/Home";
+import InterviewHistory from "./pages/InterviewHistory";
+
 
 function App() {
   return (
@@ -29,6 +32,8 @@ function App() {
 
 
         <Route path="/interview" element={<Interview />} />
+        <Route path="/interview/history" element={<InterviewHistory />} />
+<Route path="/interview/result/:sessionId" element={<InterviewResult />} />
       </Routes>
     </BrowserRouter>
   );

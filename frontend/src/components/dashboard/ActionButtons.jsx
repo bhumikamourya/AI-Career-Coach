@@ -35,6 +35,15 @@ const ActionButtons = ({ onPractice, onInterview, navigate }) => {
         <FiClock /> History
       </motion.button>
 
+      <motion.button
+        whileHover={{ scale: 1.03 }}
+        whileTap={{ scale: 0.97 }}
+        onClick={() => navigate("/interview/history")}
+        className={`${baseBtn} bg-white/30 backdrop-blur border border-white/50 text-slate-700`}
+      >
+        <FiClock />Interview History
+      </motion.button>
+
     </div>
   );
 };

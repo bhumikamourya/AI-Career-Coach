@@ -1,42 +1,48 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import { useDispatch } from "react-redux";
+
+import { motion } from "framer-motion";
 
 import {
-  getDashboardData,
-  evaluate
+  generateInterview,
+  submitInterview,
+  getDashboardData
 } from "../services/api";
 
 const Interview = () => {
 
   const navigate = useNavigate();
-  const dispatch = useDispatch();
 
   const [questions, setQuestions] = useState([]);
   const [index, setIndex] = useState(0);
 
-  const [answer, setAnswer] = useState("");
+  const [started, setStarted] = useState(false);
 
+  const [answer, setAnswer] = useState("");
   const [answers, setAnswers] = useState([]);
 
-  const [result, setResult] = useState(null);
-
   const [loading, setLoading] = useState(false);
+  const [starting, setStarting] = useState(true);
+
+  const [sessionId, setSessionId] = useState(null);
 
   const [blocked, setBlocked] = useState(false);
 
-  const [finalScore, setFinalScore] = useState([]);
-
-  const [starting, setStarting] = useState(true);
-
   useEffect(() => {
+
+    if (started) return;
+
+    setStarted(true);
+
     initInterview();
+
   }, []);
 
-  // ======================
-  // INIT
-  // ======================
+  useEffect(() => {
+
+    setAnswer(answers[index] || "");
+
+  }, [index]);
 
   const initInterview = async () => {
 
@@ -44,40 +50,23 @@ const Interview = () => {
 
       const dash = await getDashboardData();
 
-      const readiness =
-        dash.readinessScore || 0;
-
-      const weakSkills =
-        dash.skillGap?.weakSkills || [];
-
-      // LOCK INTERVIEW
-
-      if (readiness < 70) {
+      if (dash.readinessScore < 70) {
 
         setBlocked(true);
-        return;
 
+        return;
       }
 
-      // DYNAMIC QUESTIONS
+      const role = dash.user.targetRole;
 
-      const dynamicQuestions =
-        weakSkills.length > 0
-          ? weakSkills.map(
-              (skill) =>
-                `Explain ${skill} with real-world example.`
-            )
-          : [
-              "Explain your main project.",
-              "What are your strengths?",
-              "Explain a challenging bug you solved.",
-            ];
+      const res = await generateInterview({ role });
 
-      setQuestions(dynamicQuestions);
+      setQuestions(res.questions);
+
+      setSessionId(res.sessionId);
 
     } catch (err) {
 
-      console.error(err);
       alert("Failed to start interview");
 
     } finally {
@@ -87,51 +76,61 @@ const Interview = () => {
     }
   };
 
-  const currentQuestion = questions[index];
+  const handlePrev = () => {
 
-  // ======================
-  // SUBMIT ANSWER
-  // ======================
+    if (index > 0) {
 
-  const handleSubmit = async () => {
+      const updated = [...answers];
 
-    if (!answer.trim()) {
-      alert("Write your answer first");
+      updated[index] = answer;
+
+      setAnswers(updated);
+
+      setIndex(index - 1);
+    }
+  };
+
+  const handleNext = async () => {
+
+    const updated = [...answers];
+
+    updated[index] = answer;
+
+    setAnswers(updated);
+
+    if (index < questions.length - 1) {
+
+      setIndex(index + 1);
+
       return;
     }
 
+    setLoading(true);
+
     try {
 
-      setLoading(true);
-
-      // SAVE ANSWER LOCALLY
-
-      const updatedAnswers = [...answers];
-
-      updatedAnswers[index] = answer;
-
-      setAnswers(updatedAnswers);
-
-      // EVALUATE
-
-      const res = await evaluate({
-        question: currentQuestion,
-        answer
+      await submitInterview({
+        sessionId,
+        answers: updated
       });
 
-      setResult(res);
+      navigate(`/interview/result/${sessionId}`);
 
-      // STORE SCORE
+       const answeredCount =
+      updated.filter(a => a?.trim()).length;
 
-      setFinalScore((prev) => [
-        ...prev,
-        res.score || 0
-      ]);
+    if (answeredCount === 0) {
+
+      alert("Please answer at least one question.");
+
+      setLoading(false);
+
+      return;
+    }
 
     } catch (err) {
 
-      console.error(err);
-      alert("Evaluation failed");
+      alert("Submit failed");
 
     } finally {
 
@@ -140,78 +139,68 @@ const Interview = () => {
     }
   };
 
-  // ======================
-  // NEXT QUESTION
-  // ======================
+  const currentQuestion = questions[index];
 
-  const handleNext = async () => {
+  const progress =
+    questions.length > 0
+      ? ((index + 1) / questions.length) * 100
+      : 0;
 
-    setAnswer("");
-    setResult(null);
-
-    // NEXT QUESTION
-
-    if (index < questions.length - 1) {
-
-      setIndex((prev) => prev + 1);
-
-    } else {
-
-      // FINAL SCORE
-
-      const avg =
-        finalScore.reduce((a, b) => a + b, 0) /
-        finalScore.length;
-
-      try {
-
-        await axios.post(
-          `${import.meta.env.VITE_API_URL}/api/interview/save-score`,
-          {
-            score: Math.round(avg)
-          }
-        );
-
-        alert(
-          `Interview Completed! Final Score: ${Math.round(avg)}`
-        );
-
-        navigate("/");
-
-      } catch (err) {
-
-        console.error(err);
-
-      }
-    }
-  };
-
-  // ======================
   // BLOCKED UI
-  // ======================
 
   if (blocked) {
 
     return (
 
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="min-h-screen w-full bg-[#f3f4fb] p-4 md:p-10 relative overflow-hidden">
 
-        <div className="bg-white shadow-xl p-6 rounded-xl text-center">
+        {/* BACKGROUND */}
+        <div className="absolute inset-0 z-0 opacity-60 pointer-events-none">
 
-          <h2 className="text-xl font-bold text-red-500">
-            Interview Locked
-          </h2>
+          <div className="absolute top-[-5%] left-[-10%] w-[500px] h-[500px] bg-[#d9d4ff] rounded-full blur-[110px]"></div>
 
-          <p className="mt-2 text-gray-600">
-            Reach at least <b>70% readiness</b> to unlock interview
-          </p>
+          <div className="absolute bottom-[-10%] right-[-5%] w-[500px] h-[500px] bg-[#ffecde] rounded-full blur-[110px]"></div>
 
-          <button
-            onClick={() => navigate("/")}
-            className="mt-4 bg-blue-500 text-white px-4 py-2 rounded"
-          >
-            Go Back
-          </button>
+        </div>
+
+        <div className="max-w-3xl mx-auto relative z-10">
+
+          <div className="bg-white/50 backdrop-blur-xl border border-white/60 rounded-[2.5rem] shadow-xl p-10 text-center">
+
+            <div className="w-24 h-24 mx-auto rounded-full bg-gradient-to-tr from-[#9689ff] to-[#ffbe94] flex items-center justify-center text-4xl shadow-lg mb-6">
+
+              🔒
+
+            </div>
+
+            <h1 className="text-3xl font-extrabold text-[#3b3a4a] mb-4">
+
+              Interview Locked
+
+            </h1>
+
+            <p className="text-slate-500 font-medium mb-8">
+
+              You need at least
+
+              <span className="text-[#9689ff] font-bold">
+                {" "}70% readiness{" "}
+              </span>
+
+              to unlock AI Interview Mode.
+
+            </p>
+
+            <button
+              onClick={() => navigate("/dashboard")}
+              className="px-8 py-4 rounded-2xl bg-gradient-to-r from-[#818cf8] to-[#a78bfa] text-white font-bold shadow-lg"
+            >
+
+              Go To Dashboard
+
+            </button>
+
+          </div>
 
         </div>
 
@@ -219,120 +208,247 @@ const Interview = () => {
     );
   }
 
-  // ======================
-  // LOADING
-  // ======================
+  // LOADING UI
 
   if (starting || !currentQuestion) {
 
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p>Loading Interview...</p>
+
+      <div className="min-h-screen w-full bg-[#f3f4fb] p-4 md:p-10 relative overflow-hidden">
+
+        {/* BACKGROUND */}
+        <div className="absolute inset-0 z-0 opacity-60 pointer-events-none">
+
+          <div className="absolute top-[-5%] left-[-10%] w-[500px] h-[500px] bg-[#d9d4ff] rounded-full blur-[110px]"></div>
+
+          <div className="absolute bottom-[-10%] right-[-5%] w-[500px] h-[500px] bg-[#ffecde] rounded-full blur-[110px]"></div>
+
+        </div>
+
+        <div className="max-w-3xl mx-auto relative z-10">
+
+          <div className="bg-white/50 backdrop-blur-xl border border-white/60 rounded-[2.5rem] shadow-xl p-10 text-center">
+
+            <div className="w-20 h-20 border-4 border-[#d9d4ff] border-t-[#9689ff] rounded-full animate-spin mx-auto mb-6"></div>
+
+            <h2 className="text-2xl font-extrabold text-[#3b3a4a] mb-2">
+
+              Preparing Your Interview
+
+            </h2>
+
+            <p className="text-slate-500">
+
+              AI is generating personalized technical questions...
+
+            </p>
+
+          </div>
+
+        </div>
+
       </div>
     );
   }
 
-  // ======================
-  // UI
-  // ======================
+  // MAIN UI
 
   return (
 
-    <div className="min-h-screen bg-gray-50 p-6">
+    <div className="min-h-screen w-full bg-[#f3f4fb] text-slate-800 p-4 md:p-10 relative overflow-hidden">
 
-      <div className="max-w-3xl mx-auto">
+      {/* BACKGROUND */}
+      <div className="absolute inset-0 z-0 opacity-60 pointer-events-none">
 
-        {/* HEADER */}
+        <div className="absolute top-[-5%] left-[-10%] w-[500px] h-[500px] bg-[#d9d4ff] rounded-full blur-[110px]"></div>
 
-        <div className="bg-white p-5 rounded-xl shadow mb-4">
+        <div className="absolute bottom-[-10%] right-[-5%] w-[500px] h-[500px] bg-[#ffecde] rounded-full blur-[110px]"></div>
 
-          <h2 className="text-2xl font-bold">
-            AI Mock Interview
-          </h2>
+      </div>
 
-          <p className="text-gray-500">
-            Question {index + 1} / {questions.length}
-          </p>
+      <div className="max-w-5xl mx-auto relative z-10">
+
+        {/* TOP BAR */}
+
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
+
+          <div>
+
+            <h1 className="text-4xl font-extrabold text-[#3b3a4a] tracking-tight">
+
+              AI Interview
+
+            </h1>
+
+            <p className="text-slate-500 font-medium italic">
+
+              Simulate a real-world technical interview
+
+            </p>
+
+          </div>
 
         </div>
 
-        {/* QUESTION */}
+        {/* PROGRESS SECTION */}
 
-        <div className="bg-white p-6 rounded-xl shadow mb-4">
+        <div className="bg-white/50 backdrop-blur-xl border border-white/60 p-6 rounded-[2rem] shadow-lg mb-8">
 
-          <p className="text-lg font-semibold">
-            {currentQuestion}
-          </p>
+          {/* TOP ROW */}
+          <div className="flex justify-between items-center mb-3">
+
+            <span className="text-sm font-bold text-[#3b3a4a]">
+
+              AI Interview Progress
+
+            </span>
+
+            <span className="text-sm font-black text-[#9689ff]">
+
+              {index + 1} / {questions.length}
+
+            </span>
+
+          </div>
+
+          {/* PROGRESS BAR */}
+          <div className="w-full bg-slate-200 h-3 rounded-full overflow-hidden">
+
+            <motion.div
+              initial={{ width: 0 }}
+              animate={{ width: `${progress}%` }}
+              transition={{ duration: 0.5, ease: "easeOut" }}
+              className="h-full bg-gradient-to-r from-[#9689ff] to-[#ffbe94]"
+            />
+
+          </div>
 
         </div>
 
-        {/* ANSWER */}
+        {/* MAIN CARD */}
 
-        <textarea
-          value={answer}
-          onChange={(e) =>
-            setAnswer(e.target.value)
-          }
-          placeholder="Write your answer..."
-          className="w-full border p-3 rounded h-32"
-        />
+        <div className="bg-white/50 backdrop-blur-xl border border-white/60 rounded-[2.5rem] shadow-xl p-6 md:p-8">
 
-        {/* ACTION */}
+          {/* QUESTION HEADER */}
 
-        {!result ? (
+          <div className="flex items-center gap-4 mb-8">
 
-          <button
-            onClick={handleSubmit}
-            disabled={loading}
-            className="mt-3 bg-blue-600 text-white px-4 py-2 rounded"
-          >
-            {loading
-              ? "Evaluating..."
-              : "Submit Answer"}
-          </button>
+            <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-[#9689ff] to-[#ffbe94] flex items-center justify-center text-white font-extrabold text-lg shadow-lg">
 
-        ) : (
-
-          <div className="bg-green-100 p-4 mt-4 rounded">
-
-            <h3 className="font-semibold text-lg">
-              Score: {result.score}/100
-            </h3>
-
-            <div className="mt-2">
-
-              <p className="font-medium">
-                Feedback:
-              </p>
-
-              {(result.feedback || []).map(
-                (f, i) => (
-                  <p key={i}>• {f}</p>
-                )
-              )}
+              {index + 1}
 
             </div>
 
+            <div>
+
+              <p className="text-xs uppercase tracking-widest text-slate-400 font-bold">
+
+                Technical Question
+
+              </p>
+
+              <h2 className="text-2xl font-extrabold text-[#3b3a4a]">
+
+                Solve Carefully
+
+              </h2>
+
+            </div>
+
+          </div>
+
+          {/* QUESTION */}
+
+          <motion.div
+            key={index}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3 }}
+            className="bg-white/60 border border-white rounded-[2rem] p-8 shadow-sm"
+          >
+
+            <p className="text-lg leading-8 text-[#3b3a4a] font-semibold">
+
+              {currentQuestion}
+
+            </p>
+
+          </motion.div>
+
+          {/* ANSWER */}
+
+          <div className="mt-8">
+
+            <div className="flex justify-between items-center mb-3">
+
+              <h3 className="text-lg font-extrabold text-[#3b3a4a]">
+
+                Your Answer
+
+              </h3>
+
+              <span className="text-xs text-slate-400 font-semibold">
+
+                Be practical & detailed
+
+              </span>
+
+            </div>
+
+            <textarea
+              value={answer}
+              onChange={(e) => setAnswer(e.target.value)}
+              rows={10}
+              placeholder="Write your technical answer here..."
+              className="w-full p-6 rounded-[2rem] bg-white/70 border border-white shadow-md outline-none resize-none text-slate-700 placeholder:text-slate-400 focus:ring-4 focus:ring-[#d9d4ff] focus:border-[#9689ff] transition-all duration-300"
+            />
+
+            <div className="flex justify-end mt-3">
+
+              <p className="text-xs text-slate-400 font-medium">
+
+                Answer auto-saved locally
+
+              </p>
+
+            </div>
+
+          </div>
+
+          {/* ACTIONS */}
+
+          <div className="flex flex-col sm:flex-row justify-between gap-4 mt-8">
+
+            <button
+              onClick={handlePrev}
+              disabled={index === 0}
+              className="px-8 py-4 rounded-2xl bg-white border border-slate-200 font-bold text-slate-600 disabled:opacity-40 shadow-sm"
+            >
+
+              Previous Question
+
+            </button>
+
             <button
               onClick={handleNext}
-              className="mt-4 bg-black text-white px-4 py-2 rounded"
+              disabled={loading}
+              className={`px-8 py-4 rounded-2xl text-white font-bold shadow-lg disabled:opacity-70 ${index === questions.length - 1
+                  ? "bg-gradient-to-r from-emerald-500 to-green-400"
+                  : "bg-gradient-to-r from-[#818cf8] to-[#a78bfa]"
+                }`}
             >
-              {index < questions.length - 1
-                ? "Next Question"
-                : "Finish Interview"}
+
+              {loading
+                ? "Submitting..."
+                : index === questions.length - 1
+                  ? "Finish Interview"
+                  : "Next Question"}
+
             </button>
 
           </div>
-        )}
 
-        {/* EXIT */}
-
-        <button
-          onClick={() => navigate("/")}
-          className="mt-4 ml-3 bg-gray-500 text-white px-4 py-2 rounded"
-        >
-          Exit Interview
-        </button>
+        </div>
 
       </div>
 

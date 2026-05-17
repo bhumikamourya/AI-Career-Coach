@@ -52,8 +52,9 @@ exports.deleteSkill = async (req, res) => {
 
 exports.getDashboardData = async (req, res) => {
   try {
-    const user = await User.findById(req.user.id).select(
-      "name email roadmap skillGap readinessScore evaluatedSkills progress currentPhase attempts, aiInsight"
+    const user = await User.findById(req.user.id)
+    .select(
+      "name email targetRole roadmap skillGap readinessScore evaluatedSkills progress currentPhase attempts, aiInsight"
     );
 
     if (!user) {
@@ -63,7 +64,8 @@ exports.getDashboardData = async (req, res) => {
     res.json({
        user: {
         name: user.name,
-        email: user.email
+        email: user.email,
+         targetRole: user.targetRole
       },
       roadmap: user.roadmap || [],
       skillGap: user.skillGap || {},
