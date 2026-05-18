@@ -1,4 +1,4 @@
-const { askAI } = require("./ai.service");
+const { askAI } = require("./ai.Service");
 
 // FALLBACK QUESTIONS
 
