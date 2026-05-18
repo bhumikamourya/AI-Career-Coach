@@ -52,10 +52,11 @@ exports.deleteSkill = async (req, res) => {
 
 exports.getDashboardData = async (req, res) => {
   try {
+console.log("🔥 HIT DASHBOARD");
     const user = await User.findById(req.user.id)
     .select(
-      "name email targetRole roadmap skillGap readinessScore evaluatedSkills progress currentPhase attempts, aiInsight"
-    );
+      "name email targetRole roadmap skillGap readinessScore evaluatedSkills progress currentPhase attempts aiInsight"
+    );    
 
     if (!user) {
       return res.status(404).json({ message: "User not found" });
@@ -65,7 +66,7 @@ exports.getDashboardData = async (req, res) => {
        user: {
         name: user.name,
         email: user.email,
-         targetRole: user.targetRole
+         targetRole: user.targetRole || ""
       },
       roadmap: user.roadmap || [],
       skillGap: user.skillGap || {},
