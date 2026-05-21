@@ -1,13 +1,13 @@
 const ProfileLayout = ({ children }) => {
     return (
-        <div className="min-h-screen w-full bg-[#f3f4fb] text-slate-800 p-4 md:p-10 font-sans relative overflow-x-hidden">
+        <div className="min-h-screen relative overflow-hidden bg-gradient-to-tr from-[#f0f2f5] via-[#f5f0ff] to-[#f3e3d5] p-6">
 
-
-            <div className="absolute inset-0 z-0 opacity-60 pointer-events-none">
-                <div className="absolute top-[-5%] left-[-10%] w-[500px] h-[500px] bg-[#d9d4ff] rounded-full blur-[110px]"></div>
-                <div className="absolute bottom-[-10%] right-[-5%] w-[500px] h-[500px] bg-[#ffecde] rounded-full blur-[110px]"></div>
-            </div>
-
+      {/* BACKGROUND BLOBS */}
+      <div className="fixed inset-0 pointer-events-none">
+        <div className="absolute top-[-10%] left-[-5%] w-[450px] h-[450px] bg-indigo-200/30 rounded-full blur-[120px]" />
+        <div className="absolute bottom-[-10%] right-[-5%] w-[450px] h-[450px] bg-orange-200/30 rounded-full blur-[120px]" />
+        <div className="absolute top-1/2 left-1/2 w-[300px] h-[300px] bg-purple-200/20 rounded-full blur-3xl" />
+      </div>
             <div className="max-w-6xl mx-auto relative z-10">
                 {children}
             </div>

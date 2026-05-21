@@ -2,7 +2,19 @@ import { useEffect, useState } from "react";
 
 import { useParams, useNavigate } from "react-router-dom";
 
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
+
+import {
+  Eye,
+  EyeOff,
+  ArrowLeft,
+  Brain,
+  CheckCircle2,
+  AlertCircle,
+  Trophy,
+  Target,
+  ClipboardCheck,
+} from "lucide-react";
 
 import { getInterviewResult } from "../services/api";
 
@@ -15,6 +27,8 @@ const InterviewResult = () => {
   const [result, setResult] = useState(null);
 
   const [loading, setLoading] = useState(true);
+
+  const [showReviews, setShowReviews] = useState(true);
 
   useEffect(() => {
 
@@ -33,6 +47,7 @@ const InterviewResult = () => {
       } finally {
 
         setLoading(false);
+
       }
     };
 
@@ -46,36 +61,28 @@ const InterviewResult = () => {
 
     return (
 
-      <div className="min-h-screen w-full bg-[#f3f4fb] p-4 md:p-10 relative overflow-hidden">
+      <div className="min-h-screen bg-gradient-to-tr from-[#f0f2f5] via-[#f5f0ff] to-[#f3e3d5] flex items-center justify-center p-6 relative overflow-hidden">
 
-        {/* BACKGROUND */}
-        <div className="absolute inset-0 z-0 opacity-60 pointer-events-none">
+        {/* BLOBS */}
+        <div className="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] bg-violet-300/30 blur-[140px] rounded-full"></div>
 
-          <div className="absolute top-[-5%] left-[-10%] w-[500px] h-[500px] bg-[#d9d4ff] rounded-full blur-[110px]"></div>
+        <div className="absolute bottom-[-10%] right-[-10%] w-[500px] h-[500px] bg-orange-200/30 blur-[140px] rounded-full"></div>
 
-          <div className="absolute bottom-[-10%] right-[-5%] w-[500px] h-[500px] bg-[#ffecde] rounded-full blur-[110px]"></div>
+        <div className="relative z-10 bg-white/60 backdrop-blur-2xl border border-white/70 rounded-[2.5rem] shadow-2xl px-8 py-12 w-full max-w-xl text-center">
 
-        </div>
+          <div className="w-20 h-20 border-[5px] border-violet-200 border-t-violet-600 rounded-full animate-spin mx-auto mb-8"></div>
 
-        <div className="max-w-3xl mx-auto relative z-10">
+          <h1 className="text-3xl md:text-4xl font-black text-[#2f2f46]">
 
-          <div className="bg-white/50 backdrop-blur-xl border border-white/60 rounded-[2.5rem] shadow-xl p-10 text-center">
+            Evaluating Interview
 
-            <div className="w-20 h-20 border-4 border-[#d9d4ff] border-t-[#9689ff] rounded-full animate-spin mx-auto mb-6"></div>
+          </h1>
 
-            <h2 className="text-2xl font-extrabold text-[#3b3a4a] mb-2">
+          <p className="text-slate-500 mt-3 text-lg">
 
-              Evaluating Interview
+            AI is analyzing your technical performance...
 
-            </h2>
-
-            <p className="text-slate-500">
-
-              AI is analyzing your technical performance...
-
-            </p>
-
-          </div>
+          </p>
 
         </div>
 
@@ -89,22 +96,41 @@ const InterviewResult = () => {
 
     return (
 
-      <div className="min-h-screen w-full bg-[#f3f4fb] flex items-center justify-center p-4">
+      <div className="min-h-screen bg-gradient-to-tr from-[#f0f2f5] via-[#f5f0ff] to-[#f3e3d5] flex items-center justify-center p-6">
 
-        <div className="bg-white/60 backdrop-blur-xl border border-white/60 rounded-[2.5rem] shadow-xl p-10 text-center">
+        <div className="bg-white/30 backdrop-blur-2xl border border-white rounded-[2.5rem] shadow-2xl p-10 text-center max-w-lg w-full">
 
-          <h2 className="text-2xl font-extrabold text-[#3b3a4a] mb-4">
+          <AlertCircle size={70} className="mx-auto text-red-400 mb-6" />
+
+          <h2 className="text-3xl font-black text-[#2f2f46] mb-3">
 
             No Result Found
 
           </h2>
 
+          <p className="text-slate-500 mb-8">
+
+            We couldn’t find any interview result for this session.
+
+          </p>
+
           <button
             onClick={() => navigate("/dashboard")}
-            className="px-8 py-4 rounded-2xl bg-gradient-to-r from-[#818cf8] to-[#a78bfa] text-white font-bold shadow-lg"
+            className="
+              px-8 py-4
+              rounded-2xl
+              bg-gradient-to-r
+              from-violet-500
+              to-indigo-500
+              text-white
+              font-black
+              shadow-xl
+              hover:scale-[1.03]
+              transition-all
+            "
           >
 
-            Go To Dashboard
+            Back To Dashboard
 
           </button>
 
@@ -114,194 +140,388 @@ const InterviewResult = () => {
     );
   }
 
-  // STATUS COLORS
+  // STATUS
 
   const statusBg =
     result.status === "completed"
       ? "bg-emerald-100 text-emerald-700"
       : result.status === "submitted"
-        ? "bg-amber-100 text-amber-700"
-        : "bg-indigo-100 text-indigo-700";
-
-  // READINESS STATUS
-
-  const readinessReady =
-    result?.readinessStatus === "READY";
-
-  const readinessColor =
-    readinessReady
-      ? "text-emerald-600"
-      : "text-red-500";
-
-  const readinessBg =
-    readinessReady
-      ? "bg-emerald-100"
-      : "bg-red-100";
+      ? "bg-amber-100 text-amber-700"
+      : "bg-indigo-100 text-indigo-700";
 
   return (
 
-    <div className="min-h-screen w-full bg-[#f3f4fb] text-slate-800 p-4 md:p-10 relative overflow-hidden">
+    <div className="min-h-screen relative overflow-hidden bg-gradient-to-tr from-[#f0f2f5] via-[#f5f0ff] to-[#f3e3d5] px-4 md:px-8 py-6 md:py-8">
 
-      {/* BACKGROUND */}
-      <div className="absolute inset-0 z-0 opacity-60 pointer-events-none">
+      {/* BLOBS */}
+      <div className="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] bg-violet-300/30 blur-[140px] rounded-full"></div>
 
-        <div className="absolute top-[-5%] left-[-10%] w-[500px] h-[500px] bg-[#d9d4ff] rounded-full blur-[110px]"></div>
+      <div className="absolute bottom-[-10%] right-[-10%] w-[500px] h-[500px] bg-orange-200/30 blur-[140px] rounded-full"></div>
 
-        <div className="absolute bottom-[-10%] right-[-5%] w-[500px] h-[500px] bg-[#ffecde] rounded-full blur-[110px]"></div>
+      {/* GRID */}
+      <div className="absolute inset-0 opacity-[0.03] [background-image:linear-gradient(to_right,#000_1px,transparent_1px),linear-gradient(to_bottom,#000_1px,transparent_1px)] [background-size:40px_40px]"></div>
+
+      <div className="max-w-7xl mx-auto relative z-10 space-y-8">
+
+        {/* HEADER */}
+<motion.div
+  initial={{
+    opacity: 0,
+    y: 15,
+  }}
+  animate={{
+    opacity: 1,
+    y: 0,
+  }}
+  className="
+    rounded-[2rem] md:rounded-[2.5rem]
+    p-4 sm:p-5 md:p-7
+  "
+>
+
+  <div
+    className="
+      flex items-center justify-between
+      gap-3 md:gap-5
+    "
+  >
+
+    {/* LEFT */}
+    <div
+      className="
+        flex items-center
+        gap-3 sm:gap-4
+        min-w-0
+        flex-1
+      "
+    >
+
+      {/* ICON */}
+      <div
+        className="
+          shrink-0
+          w-11 h-11
+          sm:w-14 sm:h-14
+          rounded-2xl
+          bg-gradient-to-br
+          from-[#9689ff]
+          to-[#ffbe94]
+          flex items-center justify-center
+          shadow-xl
+        "
+      >
+
+        <Brain
+          className="text-white"
+          size={22}
+        />
 
       </div>
 
-      <div className="max-w-6xl mx-auto relative z-10">
+      {/* TEXT */}
+      <div className="min-w-0">
 
-        {/* TOP BAR */}
-
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
-
-          <div>
-
-            <h1 className="text-4xl font-extrabold text-[#3b3a4a] tracking-tight">
-
-              Interview Result
-
-            </h1>
-
-            <p className="text-slate-500 font-medium italic">
-
-              AI-powered performance analysis
-
-            </p>
-
-          </div>
-
-          <div>
-
-            <button
-              onClick={() => navigate("/dashboard")}
-              className="px-6 py-3 rounded-2xl bg-gradient-to-r from-[#818cf8] to-[#a78bfa] text-white font-bold shadow-lg m-4"
-            >
-
-              Go To Dashboard
-
-            </button>
-
-            <button
-              onClick={() => navigate("/interview/history")}
-              className="px-6 py-3 bg-white border border-[#d0d2ff] rounded-xl font-bold text-[#9689ff] hover:bg-[#f8f7ff] shadow-sm"
-            >
-
-              View All Attempts
-
-            </button>
-
-          </div>
-
-        </div>
-
-        {/* SCORE CARD */}
-
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4 }}
-          className="bg-white/50 backdrop-blur-xl border border-white/60 rounded-[2.5rem] shadow-xl p-8 mb-8"
+        <h1
+          className="
+            text-[1.25rem]
+            sm:text-3xl
+            md:text-5xl
+            font-black
+            text-[#53535fce]
+            tracking-tight
+            leading-tight
+            truncate
+          "
         >
 
-            {/* SCORE CARDS */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+          Interview Result
 
-              {/* STATUS CARD */}
-              <div className="relative bg-white/60 backdrop-blur-xl rounded-3xl p-6 shadow-lg border border-white overflow-hidden">
+        </h1>
 
-                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-indigo-400 to-purple-500"></div>
+        <p
+          className="
+            hidden sm:block
+            text-slate-500
+            mt-1
+            text-sm md:text-base
+          "
+        >
 
-                <p className="text-xs uppercase tracking-widest text-slate-400 font-bold">
+          Deep AI-powered performance analysis
+
+        </p>
+
+      </div>
+
+    </div>
+
+    {/* BUTTONS */}
+    <div
+      className="
+        flex items-center
+        gap-2 sm:gap-3
+        shrink-0
+      "
+    >
+
+      {/* DASHBOARD */}
+      <motion.button
+
+        whileHover={{
+          scale: 1.03,
+        }}
+
+        whileTap={{
+          scale: 0.97,
+        }}
+
+        onClick={() => navigate("/dashboard")}
+
+        className="
+          flex items-center justify-center gap-2
+
+          px-3 sm:px-5
+          py-2.5 sm:py-3
+
+          rounded-xl sm:rounded-2xl
+
+          bg-white/80
+          border border-white
+
+          text-violet-600
+          font-black
+
+          text-xs sm:text-sm md:text-base
+
+          shadow-lg
+          hover:bg-white
+          transition-all
+          whitespace-nowrap
+        "
+      >
+
+        <ArrowLeft size={16} />
+
+        <span className="hidden sm:inline">
+          Dashboard
+        </span>
+
+      </motion.button>
+
+      {/* ATTEMPTS */}
+      <motion.button
+
+        whileHover={{
+          scale: 1.03,
+        }}
+
+        whileTap={{
+          scale: 0.97,
+        }}
+
+        onClick={() => navigate("/interview/history")}
+
+        className="
+          px-3 sm:px-5
+          py-2.5 sm:py-3
+
+          rounded-xl sm:rounded-2xl
+
+          bg-gradient-to-r
+          from-violet-500
+          to-indigo-500
+
+          text-white
+          font-black
+
+          text-xs sm:text-sm md:text-base
+
+          shadow-xl
+          whitespace-nowrap
+        "
+      >
+
+        <span className="hidden sm:inline">
+          View Attempts
+        </span>
+
+        <span className="sm:hidden">
+          Attempts
+        </span>
+
+      </motion.button>
+
+    </div>
+
+  </div>
+
+</motion.div>
+
+        {/* STATS */}
+        <motion.div
+          initial={{
+            opacity: 0,
+            y: 20,
+          }}
+          animate={{
+            opacity: 1,
+            y: 0,
+          }}
+          transition={{
+            delay: 0.05,
+          }}
+          className="
+            bg-white/30
+            backdrop-blur-2xl
+            border border-white/70
+            rounded-[2.5rem]
+            p-6 md:p-8
+            
+            shadow-[0_20px_60px_rgba(0,0,0,0.08)]
+          "
+        >
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
+
+            {/* STATUS */}
+            <div className="bg-white/50 rounded-3xl p-6 border border-white shadow-lg">
+
+              <div className="flex items-center justify-between">
+
+                <p className="text-xs uppercase tracking-[0.2em] text-slate-400 font-black">
+
                   Status
+
                 </p>
 
-                <span className={`mt-4 inline-flex px-4 py-2 rounded-full text-sm font-bold ${statusBg}`}>
-                  {result.status}
-                </span>
+                <ClipboardCheck className="text-indigo-500" size={20} />
 
               </div>
 
-              {/* ATTEMPTED */}
-              <div className="relative bg-white/60 backdrop-blur-xl rounded-3xl p-6 shadow-lg border border-white overflow-hidden">
+              <div className={`mt-5 inline-flex px-4 py-2 rounded-full text-sm font-black ${statusBg}`}>
 
-                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-violet-400 to-indigo-500"></div>
+                {result.status}
 
-                <p className="text-xs uppercase tracking-widest text-slate-400 font-bold">
+              </div>
+
+            </div>
+
+            {/* ATTEMPTED */}
+            <div className="bg-white/50 rounded-3xl p-6 border border-white shadow-lg">
+
+              <div className="flex items-center justify-between">
+
+                <p className="text-xs uppercase tracking-[0.2em] text-slate-400 font-black">
+
                   Attempted
+
                 </p>
 
-                <h2 className="mt-4 text-4xl font-black text-[#7c3aed]">
-                  {result.attempted}
-                </h2>
-
-                <p className="text-xs text-slate-400 mt-1">
-                  answered questions
-                </p>
+                <Target className="text-violet-500" size={20} />
 
               </div>
 
-              {/* QUESTIONS */}
-              <div className="relative bg-white/60 backdrop-blur-xl rounded-3xl p-6 shadow-lg border border-white overflow-hidden">
+              <h2 className="mt-5 text-5xl font-black text-violet-600">
 
-                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-orange-300 to-pink-400"></div>
+                {result.attempted}
 
-                <p className="text-xs uppercase tracking-widest text-slate-400 font-bold">
+              </h2>
+
+              <p className="text-slate-400 mt-2 text-sm">
+
+                answered questions
+
+              </p>
+
+            </div>
+
+            {/* TOTAL */}
+            <div className="bg-white/50 rounded-3xl p-6 border border-white shadow-lg">
+
+              <div className="flex items-center justify-between">
+
+                <p className="text-xs uppercase tracking-[0.2em] text-slate-400 font-black">
+
                   Total Questions
+
                 </p>
 
-                <h2 className="mt-4 text-4xl font-black text-[#f97316]">
-                  {result.totalQuestions}
-                </h2>
-
-                <p className="text-xs text-slate-400 mt-1">
-                  interview length
-                </p>
+                <CheckCircle2 className="text-orange-500" size={20} />
 
               </div>
 
-              {/* READINESS */}
-              <div className="relative bg-white/60 backdrop-blur-xl rounded-3xl p-6 shadow-lg border border-white overflow-hidden">
+              <h2 className="mt-5 text-5xl font-black text-orange-500">
 
-                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-emerald-400 to-teal-500"></div>
+                {result.totalQuestions}
 
-                <p className="text-xs uppercase tracking-widest text-slate-400 font-bold">
-                  Readiness Score
+              </h2>
+
+              <p className="text-slate-400 mt-2 text-sm">
+
+                interview length
+
+              </p>
+
+            </div>
+
+            {/* READINESS */}
+            <div className="bg-white/50 rounded-3xl p-6 border border-white shadow-lg">
+
+              <div className="flex items-center justify-between">
+
+                <p className="text-xs uppercase tracking-[0.2em] text-slate-400 font-black">
+
+                  Readiness
+
                 </p>
 
-                <h2 className="mt-4 text-4xl font-black text-emerald-500">
-                  {result.readinessScore || 0}%
-                </h2>
+                <Trophy className="text-emerald-500" size={20} />
 
-                <div className={`mt-3 inline-flex px-4 py-1 rounded-full text-sm font-bold
-      ${result.readinessStatus === "READY"
+              </div>
+
+              <h2 className="mt-5 text-5xl font-black text-emerald-500">
+
+                {result.readinessScore || 0}%
+
+              </h2>
+
+              <div
+                className={`mt-3 inline-flex px-4 py-1 rounded-full text-sm font-black ${
+                  result.readinessStatus === "READY"
                     ? "bg-emerald-100 text-emerald-600"
                     : "bg-red-100 text-red-500"
-                  }`}
-                >
-                  {result.readinessStatus === "READY" ? "READY" : "NOT READY"}
-                </div>
+                }`}
+              >
 
-                <p className="text-xs text-slate-400 mt-2">
-                  based on performance
-                </p>
+                {result.readinessStatus === "READY"
+                  ? "READY"
+                  : "NOT READY"}
 
               </div>
 
+            </div>
 
           </div>
 
-          {/* FINAL VERDICT */}
+          {/* VERDICT */}
+          <div
+            className="
+              mt-8
+              rounded-[2.5rem]
+             bg-gradient-to-br from-[#d9d4ff]/40 to-[#ffecde]/40
+              border border-white
+              p-7
+              shadow-lg
+            "
+          >
 
-          <div className="mt-8 rounded-[2rem] bg-gradient-to-r from-[#f8f7ff] to-[#fff7f1] border border-white p-6">
+            <h3 className="text-xl md:text-2xl font-black text-[#2f2f4696] mb-3">
 
-            <h3 className="text-xl font-extrabold text-[#3b3a4a] mb-2">
               Final AI Verdict
+
             </h3>
 
-            <p className="text-slate-600 leading-7 font-medium">
+            <p className="text-slate-600 leading-8 text-md font-medium">
 
               {result.readinessStatus === "READY"
                 ? `You are currently ready for the ${result.role} role based on your interview performance and technical readiness.`
@@ -311,35 +531,34 @@ const InterviewResult = () => {
 
           </div>
 
-          {/* EXTRA INFO */}
+          {/* EXTRA */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mt-8">
 
-          <div className="mt-8 flex flex-col md:flex-row justify-between gap-4">
+            <div className="bg-gradient-to-br from-[#d9d4ff]/40 to-[#ffecde]/40 rounded-3xl p-5 border border-white shadow-lg">
 
-            <div className="bg-white/60 rounded-2xl px-5 py-4 border border-white shadow-sm">
-
-              <p className="text-xs text-slate-400 uppercase tracking-widest font-bold mb-1">
+              <p className="text-xs uppercase tracking-[0.2em] text-slate-400 font-black mb-2">
 
                 Session
 
               </p>
 
-              <p className="font-extrabold text-[#3b3a4a]">
+              <p className="text-xl font-black text-[#2f2f4693]">
 
-                #{result.sessionNumber}
+                {result.sessionNumber}.
 
               </p>
 
             </div>
 
-            <div className="bg-white/60 rounded-2xl px-5 py-4 border border-white shadow-sm flex-1">
+            <div className="bg-gradient-to-br from-[#d9d4ff]/40 to-[#ffecde]/40 rounded-3xl p-5 border border-white shadow-lg">
 
-              <p className="text-xs text-slate-400 uppercase tracking-widest font-bold mb-1">
+              <p className="text-xs uppercase tracking-[0.2em] text-slate-400 font-black mb-2">
 
                 Role
 
               </p>
 
-              <p className="font-extrabold text-[#3b3a4a]">
+              <p className="text-xl font-black text-[#2f2f4693]">
 
                 {result.role}
 
@@ -347,15 +566,15 @@ const InterviewResult = () => {
 
             </div>
 
-            <div className="bg-white/60 rounded-2xl px-5 py-4 border border-white shadow-sm">
+            <div className="bg-gradient-to-br from-[#d9d4ff]/40 to-[#ffecde]/40 rounded-3xl p-5 border border-white shadow-lg">
 
-              <p className="text-xs text-slate-400 uppercase tracking-widest font-bold mb-1">
+              <p className="text-xs uppercase tracking-[0.2em] text-slate-400 font-black mb-2">
 
                 Backend Status
 
               </p>
 
-              <p className="font-extrabold text-[#9689ff] capitalize">
+              <p className="text-xl font-black text-green-500 capitalize">
 
                 {result.status}
 
@@ -367,145 +586,310 @@ const InterviewResult = () => {
 
         </motion.div>
 
-        {/* FEEDBACK SECTION */}
+        {/* ANSWER REVIEWS */}
+        <motion.div
+          initial={{
+            opacity: 0,
+            y: 20,
+          }}
+          animate={{
+            opacity: 1,
+            y: 0,
+          }}
+          transition={{
+            delay: 0.1,
+          }}
+          className="
+            bg-white/30
+            backdrop-blur-2xl
+            border border-white/70
+            rounded-[2.5rem]
+            shadow-[0_20px_60px_rgba(0,0,0,0.08)]
+            p-6 md:p-8
+          "
+        >
 
-        <div className="bg-white/50 backdrop-blur-xl border border-white/60 rounded-[2.5rem] shadow-xl p-8">
+          {/* HEADER */}
+          <div
+  className="
+    flex items-center justify-between
+    gap-3 md:gap-5
+    mb-8
+  "
+>
 
-          <div className="flex items-center justify-between mb-8">
+  {/* LEFT */}
+  <div className="min-w-0 flex-1">
 
-            <div>
+    <h2
+      className="
+        text-[1.4rem]
+        sm:text-2xl
+        md:text-3xl
+        font-black
+        text-[#2f2f4693]
+        leading-tight
+        truncate
+      "
+    >
 
-              <h2 className="text-2xl font-extrabold text-[#3b3a4a]">
+      Answer Reviews
 
-                AI Interview Analysis
+    </h2>
 
-              </h2>
+    <p
+      className="
+        text-slate-500
+        mt-1.5
+        text-xs sm:text-sm md:text-base
+        leading-relaxed
+        line-clamp-2
+      "
+    >
 
-              <p className="text-slate-500 text-sm mt-1">
+      AI evaluation, feedback & ideal professional answers
 
-                Detailed evaluation, mistakes, and ideal professional answers
+    </p>
 
-              </p>
+  </div>
 
-            </div>
+  {/* RIGHT BUTTON */}
+  <div className="shrink-0">
 
-            <div className="px-4 py-2 rounded-full bg-indigo-100 text-[#9689ff] text-sm font-bold">
+    <button
+      onClick={() => setShowReviews(!showReviews)}
+      className="
+        flex items-center justify-center gap-2
 
-              {result.feedback?.length || 0} Reviews
+        px-3 sm:px-5
+        py-2.5 sm:py-3
 
-            </div>
+        rounded-xl sm:rounded-2xl
 
-          </div>
+        bg-gradient-to-r
+        from-violet-500
+        to-indigo-500
 
-          {result.feedback?.length > 0 ? (
+        text-white
+        font-black
 
-            <div className="space-y-6">
+        text-xs sm:text-sm md:text-base
 
-              {result.feedback.map((f, i) => (
+        shadow-lg
+        focus:outline-none
 
-                <motion.div
-                  key={i}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: i * 0.05 }}
-                  className="bg-white/60 border border-white rounded-[2rem] p-6 shadow-sm"
-                >
+        hover:scale-[1.03]
+        transition-all
 
-                  {/* QUESTION */}
-                  <div className="mb-5">
+        whitespace-nowrap
+      "
+    >
 
-                    <p className="text-xs uppercase tracking-widest text-slate-400 font-bold mb-2">
+      <span className="hidden sm:inline">
+        {showReviews ? "Hide Reviews" : "View Reviews"}
+      </span>
 
-                      Question
+      <span className="sm:hidden">
+        {showReviews ? "Hide" : "View"}
+      </span>
 
-                    </p>
+      {showReviews
+        ? <EyeOff size={16} />
+        : <Eye size={16} />
+      }
 
-                    <p className="text-[#3b3a4a] font-bold leading-7">
+    </button>
 
-                      {f.question}
+  </div>
 
-                    </p>
+</div>
 
-                  </div>
+          {/* REVIEW LIST */}
+          <AnimatePresence>
 
-                  {/* USER ANSWER */}
-                  <div className="mb-5">
+            {showReviews && result.feedback?.length > 0 && (
 
-                    <p className="text-xs uppercase tracking-widest text-slate-400 font-bold mb-2">
+              <motion.div
+                initial={{
+                  opacity: 0,
+                  y: 10,
+                }}
+                animate={{
+                  opacity: 1,
+                  y: 0,
+                }}
+                exit={{
+                  opacity: 0,
+                  y: -10,
+                }}
+                className="space-y-6"
+              >
 
-                      Your Answer
+                {result.feedback.map((f, i) => (
 
-                    </p>
+                  <motion.div
+                    key={i}
+                    initial={{
+                      opacity: 0,
+                      y: 15,
+                    }}
+                    animate={{
+                      opacity: 1,
+                      y: 0,
+                    }}
+                    transition={{
+                      delay: i * 0.05,
+                    }}
+                    className="
+                      bg-gradient-to-br from-[#d9d4ff]/40 to-[#ffecde]/40 
+                      backdrop-blur-xl
+                      border border-white
+                      rounded-[2.3rem]
+                      p-6 md:p-8
+                      shadow-lg
+                    "
+                  >
 
-                    <div className="bg-slate-50 border border-slate-100 rounded-2xl p-5">
+                    {/* QUESTION */}
+                    <div className="mb-6">
 
-                      <p className="text-slate-600 leading-7 font-medium whitespace-pre-wrap">
+                      <div className="flex items-center gap-3 mb-4">
 
-                        {f.answer?.trim()
-                          ? f.answer
-                          : "No answer submitted"}
+                        <div
+                          className="
+                            w-11 h-11
+                            rounded-2xl
+                            bg-gradient-to-br
+                            from-violet-500
+                            to-indigo-500
+                            text-white
+                            font-black
+                            flex items-center justify-center
+                            shadow-lg
+                          "
+                        >
+
+                          {i + 1}
+
+                        </div>
+
+                        <div>
+
+                          <p className="text-xs uppercase tracking-[0.2em] text-violet-500 font-black">
+
+                            Technical Question
+
+                          </p>
+
+                          <p className="text-slate-400 text-sm">
+
+                            Interview Review
+
+                          </p>
+
+                        </div>
+
+                      </div>
+
+                      <p className="text-[#2f2f46d5] text-md md:text-lg font-bold leading-8">
+
+                        {f.question}
 
                       </p>
 
                     </div>
 
-                  </div>
+                    {/* USER ANSWER */}
+                    <div className="mb-5">
 
-                  {/* AI FEEDBACK */}
-                  <div className="mb-5">
+                      <p className="text-xs uppercase tracking-[0.2em] text-slate-400 font-black mb-3">
 
-                    <p className="text-xs uppercase tracking-widest text-amber-500 font-bold mb-2">
-
-                      AI Evaluation
-
-                    </p>
-
-                    <div className="bg-amber-50 border border-amber-100 rounded-2xl p-5">
-
-                      <p className="text-slate-700 leading-7 font-medium whitespace-pre-wrap">
-
-                        {f.feedback}
+                        Your Answer
 
                       </p>
 
+                      <div className="bg-white/45 border border-slate-100 rounded-3xl p-5">
+
+                        <p className="text-slate-700 leading-8 whitespace-pre-wrap">
+
+                          {f.answer?.trim()
+                            ? f.answer
+                            : "No answer submitted"}
+
+                        </p>
+
+                      </div>
+
                     </div>
 
-                  </div>
+                    {/* FEEDBACK */}
+                    <div className="mb-5">
 
-                  {/* IDEAL ANSWER */}
-                  <div>
+                      <p className="text-xs uppercase tracking-[0.2em] text-amber-500 font-black mb-3">
 
-                    <p className="text-xs uppercase tracking-widest text-emerald-600 font-bold mb-2">
-
-                      Ideal Answer
-
-                    </p>
-
-                    <div className="bg-emerald-50 border border-emerald-100 rounded-2xl p-5">
-
-                      <p className="text-slate-700 leading-7 font-medium whitespace-pre-wrap">
-
-                        {f.correctAnswer || "No ideal answer generated"}
+                        AI Evaluation
 
                       </p>
 
+                      <div className="bg-amber-50/75 border border-amber-100 rounded-3xl p-5">
+
+                        <p className="text-slate-700 leading-8 whitespace-pre-wrap">
+
+                          {f.feedback}
+
+                        </p>
+
+                      </div>
+
                     </div>
 
-                  </div>
+                    {/* IDEAL */}
+                    <div>
 
-                </motion.div>
+                      <p className="text-xs uppercase tracking-[0.2em] text-emerald-600 font-black mb-3">
 
-              ))}
+                        Ideal Answer
 
-            </div>
+                      </p>
 
-          ) : (
+                      <div className="bg-emerald-50/75 border border-emerald-100 rounded-3xl p-5">
 
-            <div className="text-center py-10">
+                        <p className="text-slate-700 leading-8 whitespace-pre-wrap">
 
-              <p className="text-slate-400 italic font-medium">
+                          {f.correctAnswer || "No ideal answer generated"}
 
-                No feedback available
+                        </p>
+
+                      </div>
+
+                    </div>
+
+                  </motion.div>
+
+                ))}
+
+              </motion.div>
+
+            )}
+
+          </AnimatePresence>
+
+          {/* HIDDEN */}
+          {!showReviews && (
+
+            <div className="text-center py-20">
+
+              <EyeOff size={60} className="mx-auto text-slate-300 mb-5" />
+
+              <h3 className="text-2xl font-black text-slate-400">
+
+                Reviews Hidden
+
+              </h3>
+
+              <p className="text-slate-400 mt-2">
+
+                Click “View Reviews” to see detailed AI feedback
 
               </p>
 
@@ -513,11 +897,11 @@ const InterviewResult = () => {
 
           )}
 
-        </div>
+        </motion.div>
 
-      </div >
+      </div>
 
-    </div >
+    </div>
   );
 };
 

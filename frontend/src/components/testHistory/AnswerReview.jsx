@@ -8,7 +8,7 @@ const AnswerReview = ({ answers }) => {
     <motion.div
       initial={{ opacity: 0, y: 15 }}
       animate={{ opacity: 1, y: 0 }}
-      className="bg-white/50 backdrop-blur-xl border border-white/60 p-6 rounded-[2rem] shadow-xl"
+      className="bg-gradient-to-br from-[#d9d4ff]/40 to-[#ffecde]/40  backdrop-blur-xl border border-white/60 p-6 rounded-[2rem] shadow-xl"
     >
       {/* HEADER */}
       <div className="flex justify-between items-center mb-4">
@@ -18,7 +18,23 @@ const AnswerReview = ({ answers }) => {
 
         <button
           onClick={() => setOpen(!open)}
-          className="px-4 py-1.5 text-sm font-bold rounded-xl bg-indigo-100 text-indigo-600 hover:bg-indigo-200 transition"
+          className="
+          shrink-0
+          group
+          flex items-center justify-center gap-2
+          px-4 sm:px-6
+          py-2.5 sm:py-3
+          rounded-2xl
+          font-bold
+          text-sm sm:text-base
+          text-[#7c6cff]
+          bg-white/80
+          border border-[#d8d3ff]
+          shadow-md
+          hover:shadow-xl
+          hover:bg-[#f8f7ff]
+          transition-all
+        "
         >
           {open ? "Hide" : "View"}
         </button>

@@ -4,7 +4,7 @@ const WeakAreas = ({ skills }) => {
   if (!skills || skills.length === 0) return null;
 
   return (
-    <div className="bg-white/50 backdrop-blur-xl border border-white/60 p-8 rounded-[2.5rem] shadow-xl relative overflow-hidden">
+    <div className="bg-gradient-to-br from-[#d9d4ff]/40 to-[#ffecde]/40 backdrop-blur-xl border border-white/60 p-8 rounded-[2.5rem] shadow-xl relative overflow-hidden">
 
       {/* Glow */}
       <div className="absolute top-[-30%] right-[-10%] w-[250px] h-[250px] bg-rose-200 rounded-full blur-[100px] opacity-40" />

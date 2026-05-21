@@ -3,6 +3,9 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+
 import { useDispatch, useSelector } from "react-redux";
 import {
   fetchRoles,
@@ -72,16 +75,17 @@ const Register = () => {
     e.preventDefault();
 
     if (!form.targetRole) {
-      return alert("Please select a target role");
+      toast.warning("Please select a target role");
+      return;
     }
 
     const payload = {
       ...form,
       skills: form.skills
         ? form.skills.split(",").map((s) => ({
-            name: s.trim(),
-            level: "Beginner"
-          }))
+          name: s.trim(),
+          level: "Beginner"
+        }))
         : []
     };
 
@@ -90,17 +94,25 @@ const Register = () => {
 
       localStorage.setItem("token", res.token);
 
-      alert("Registered successfully");
+      toast.success("Registered successfully");
 
       navigate("/profile");
     } catch (err) {
-      console.error(err);
+      toast.error(err.message || "Registration failed");
     }
   };
 
   return (
     <div className="h-screen w-full bg-gradient-to-tr from-[#f0f2f5] via-[#f5f0ff] to-[#f3e3d5] text-slate-700 flex items-center justify-center p-4 md:p-10 font-sans relative overflow-hidden">
-      
+      <ToastContainer
+        position="top-right"
+        autoClose={2500}
+        hideProgressBar={false}
+        newestOnTop
+        closeOnClick
+        pauseOnHover
+        theme="light"
+      />
       {/* Background Decor */}
       <div className="absolute inset-0 z-0">
         <div className="absolute top-[-10%] left-[-5%] w-[500px] h-[500px] bg-indigo-200/30 rounded-full blur-[100px]"></div>
@@ -277,11 +289,10 @@ const Register = () => {
               {onboardingSteps.map((_, i) => (
                 <div
                   key={i}
-                  className={`h-1 rounded-full transition-all duration-500 ${
-                    activeSlide === i
+                  className={`h-1 rounded-full transition-all duration-500 ${activeSlide === i
                       ? "w-8 bg-white"
                       : "w-2 bg-white/30"
-                  }`}
+                    }`}
                 />
               ))}
             </div>

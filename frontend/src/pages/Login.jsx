@@ -4,6 +4,9 @@ import { useNavigate } from "react-router-dom";
 
 import { motion, AnimatePresence } from "framer-motion";
 
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+
 import { useDispatch, useSelector } from "react-redux";
 
 import { login } from "../redux/slices/authSlice";
@@ -66,17 +69,25 @@ const Login = () => {
     const result = await dispatch(login(form));
 
     if (login.fulfilled.match(result)) {
-      alert("Login successful");
+      toast.success("Login successful");
 
       navigate("/dashboard");
     } else {
-      alert(result.payload || "Login failed");
+      toast.error(result.payload || "Login failed");
     }
   };
 
   return (
     <div className="h-screen w-full bg-gradient-to-tr from-[#f0f2f5] via-[#f5f0ff] to-[#f3e3d5] text-slate-700 flex items-center justify-center p-4 md:p-10 font-sans relative overflow-hidden">
-
+<ToastContainer
+  position="top-right"
+  autoClose={2500}
+  hideProgressBar={false}
+  newestOnTop
+  closeOnClick
+  pauseOnHover
+  theme="light"
+/>
       <div className="absolute inset-0 z-0">
         <div className="absolute top-[-10%] left-[-5%] w-[500px] h-[500px] bg-indigo-200/30 rounded-full blur-[100px]"></div>
 

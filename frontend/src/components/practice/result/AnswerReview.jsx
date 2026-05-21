@@ -4,7 +4,7 @@ const AnswerReview = ({ answers }) => {
   if (!answers || answers.length === 0) return null;
 
   return (
-    <div className="bg-white/50 backdrop-blur-xl border border-white/60 p-8 rounded-[2.5rem] shadow-xl">
+    <div className="bg-gradient-to-br from-[#d9d4ff]/40 to-[#ffecde]/40 backdrop-blur-xl border border-white/60 p-8 rounded-[2.5rem] shadow-xl">
       
       {/* HEADER */}
       <div className="flex justify-between items-center mb-4">

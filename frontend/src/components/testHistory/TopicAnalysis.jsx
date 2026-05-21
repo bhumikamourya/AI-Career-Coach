@@ -28,7 +28,7 @@ const TopicAnalysis = ({ stats }) => {
         <motion.div
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
-            className="bg-white/50 backdrop-blur-xl border border-white/60 p-6 rounded-[2rem] shadow-xl"
+            className="bg-gradient-to-br from-[#d9d4ff]/40 to-[#ffecde]/40 backdrop-blur-xl border border-white/60 p-6 rounded-[2rem] shadow-xl"
         >
             {/* HEADER */}
             <h3 className="text-lg font-extrabold text-[#3b3a4a] mb-5">

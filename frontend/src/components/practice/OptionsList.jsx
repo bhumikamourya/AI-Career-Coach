@@ -9,10 +9,10 @@ const OptionsList = ({ options, selected, onSelect }) => {
           ${
             selected === opt
               ? "bg-indigo-100 border-indigo-400"
-              : "bg-white/50 border-white/60 hover:bg-white"
+              : "bg-white/50 border-white/60 hover:bg-white shadow-xl"
           }`}
         >
-          <span className="text-gray-400 mr-2">
+          <span className="text-indigo-500 mr-2 font-semibold">
             {String.fromCharCode(65 + i)}.
           </span>
           {opt}

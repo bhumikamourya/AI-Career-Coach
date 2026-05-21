@@ -44,7 +44,7 @@ const TestHistoryCard = ({ item, index, onClick }) => {
           </p>
 
           <h3 className="text-xl font-extrabold text-[#3b3a4a]">
-            #{index}
+            ✦ {index}
           </h3>
 
           <p className="text-xs text-slate-500">
@@ -71,11 +71,11 @@ const TestHistoryCard = ({ item, index, onClick }) => {
 
         {/* RIGHT */}
         <div className="text-right space-y-1">
-          <p className="text-3xl font-black text-[#9689ff] leading-none">
+          <p className="text-3xl font-black text-gray-500 leading-none">
             {item.percentage}%
           </p>
 
-          <p className="text-xs font-bold text-[#ffbe94]">
+          <p className="text-xs font-bold text-gray-400">
             {item.readinessScore}% READY
           </p>
 

@@ -18,7 +18,7 @@ const ReadinessCard = ({ score }) => {
   const getBarColor = () => {
     if (score >= 70) return "bg-green-500";
     if (score >= 50) return "bg-yellow-500";
-    return "bg-red-500";
+    return "bg-red-400";
   };
 
   const getAction = () => {
@@ -43,7 +43,7 @@ const ReadinessCard = ({ score }) => {
       {/* SCORE + STATUS */}
       <div className="mt-4 flex items-end justify-between">
         <p className="text-3xl font-bold text-slate-800">
-          {score}%
+          {score??0}%
         </p>
 
         <span className={`text-sm font-semibold ${getColor()}`}>

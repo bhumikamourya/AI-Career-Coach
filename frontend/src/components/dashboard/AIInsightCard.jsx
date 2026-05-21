@@ -3,7 +3,7 @@ import { FiCpu } from "react-icons/fi";
 const AIInsightCard = ({ aiInsight }) => {
   if (!aiInsight) {
     return (
-      <div className="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm">
+      <div className="bg-purple-100 rounded-2xl p-5 border border-slate-200 shadow-sm">
         <h3 className="flex items-center gap-2 text-sm font-semibold text-slate-700">
           <FiCpu className="text-indigo-500" />
           AI Coach Insight
@@ -26,7 +26,7 @@ const AIInsightCard = ({ aiInsight }) => {
       </h3>
 
       {/* SUMMARY (PRIMARY) */}
-      <p className="mt-4 text-base font-medium text-slate-900 leading-snug">
+      <p className="mt-4 text-base font-medium text-slate-500 leading-snug">
         {aiInsight.summary}
       </p>
 

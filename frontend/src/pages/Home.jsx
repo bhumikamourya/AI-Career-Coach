@@ -63,9 +63,9 @@ const Home = () => {
             ✨ AI-Driven Career Guidance System
           </motion.div>
           
-          <motion.h1 variants={itemVariants} className="text-5xl md:text-[5.8rem] font-black mb-6 leading-[1.1] text-slate-900 tracking-tight max-w-5xl">
+          <motion.h1 variants={itemVariants} className="text-4xl md:text-[5.3rem] font-black mb-6 leading-[1.1] text-slate-900 tracking-tight max-w-5xl">
             Empower Your Future <br />
-            <span className="bg-gradient-to-r from-[#818cf8] via-[#a78bfa] to-[#fb923c] bg-clip-text text-transparent">
+            <span className="bg-gradient-to-r from-[#818cf8] via-[#a78bfa] to-[#fb923c]  text-4xl md:text-[5.3rem] bg-clip-text text-transparent">
               With ARYNEXA System.
             </span>
           </motion.h1>

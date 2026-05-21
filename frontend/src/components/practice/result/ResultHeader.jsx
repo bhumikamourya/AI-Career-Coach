@@ -6,7 +6,7 @@ const ResultHeader = ({ result }) => {
   const isGood = result.readinessScore >= 70;
 
   return (
-    <div className="bg-white/50 backdrop-blur-xl border border-white/60 p-8 rounded-[2.5rem] shadow-xl relative overflow-hidden">
+    <div className="bg-gradient-to-br from-[#d9d4ff]/40 to-[#ffecde]/40 backdrop-blur-xl border border-white/60 p-8 rounded-[2.5rem] shadow-xl relative overflow-hidden">
 
       {/* Glow Background */}
       <div
@@ -40,7 +40,7 @@ const ResultHeader = ({ result }) => {
         {/* RIGHT STATS BADGE */}
         <div className="flex items-center gap-4">
 
-          <div className="bg-white/70 border border-white px-5 py-3 rounded-2xl shadow-sm text-center">
+          <div className="bg-white/70 border border-gray-300 px-5 py-3 rounded-2xl shadow-sm text-center">
             <p className="text-[10px] uppercase font-bold text-slate-400 tracking-widest">
               Score
             </p>
@@ -49,7 +49,7 @@ const ResultHeader = ({ result }) => {
             </p>
           </div>
 
-          <div className="bg-white/70 border border-white px-5 py-3 rounded-2xl shadow-sm text-center">
+          <div className="bg-white/70 border border-gray-300 px-5 py-3 rounded-2xl shadow-sm text-center">
             <p className="text-[10px] uppercase font-bold text-slate-400 tracking-widest">
               Readiness
             </p>

@@ -5,7 +5,7 @@ const Loader = ({ fullScreen = true }) => {
         <div
             className={`flex items-center justify-center ${
                 fullScreen ? "h-screen w-full" : "h-full w-full"
-            } bg-[#f3f4fb]`}
+            } bg-gradient-to-tr from-[#f0f2f5] via-[#f5f0ff] to-[#f3e3d5]`}
         >
             <motion.div
                 animate={{ rotate: 360 }}

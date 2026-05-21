@@ -1,5 +1,6 @@
 import { motion, AnimatePresence } from "framer-motion";
-
+import { FiAlertTriangle } from "react-icons/fi";
+import { FiTrendingDown } from "react-icons/fi";
 const WeakSkills = ({ skills }) => {
   const hasSkills = skills && skills.length > 0;
 
@@ -7,7 +8,7 @@ const WeakSkills = ({ skills }) => {
     <motion.div
       initial={{ opacity: 0, y: 15 }}
       animate={{ opacity: 1, y: 0 }}
-      className="bg-white/50 backdrop-blur-xl border border-white/60 p-6 rounded-[2rem] shadow-xl"
+      className="bg-gradient-to-br from-[#d9d4ff]/40 to-[#ffecde]/40 backdrop-blur-xl border border-white/60 p-6 rounded-[2rem] shadow-xl"
     >
       {/* HEADER */}
       <div className="flex justify-between items-center mb-4">
@@ -16,7 +17,7 @@ const WeakSkills = ({ skills }) => {
         </h3>
 
         {hasSkills && (
-          <span className="text-xs font-bold text-rose-500 bg-rose-100 px-3 py-1 rounded-full">
+          <span className="text-xs font-bold text-rose-500 bg-white/50 px-3 py-1 rounded-full">
             Needs Attention
           </span>
         )}
@@ -35,7 +36,12 @@ const WeakSkills = ({ skills }) => {
                 transition={{ delay: i * 0.05 }}
                 className="group flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold shadow-sm bg-rose-100 text-rose-700 hover:bg-rose-200 transition-all"
               >
-                {skill}
+                {/* {skill} */}
+                <FiAlertTriangle className="text-[11px] text-rose-500" />
+
+<span>
+  {skill}
+</span>
 
                 {/* subtle hover dot */}
                 <span className="w-1.5 h-1.5 rounded-full bg-rose-500 opacity-0 group-hover:opacity-100 transition-opacity"></span>

@@ -3,6 +3,9 @@ import { useNavigate } from "react-router-dom";
 
 import { useDispatch, useSelector } from "react-redux";
 
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+
 import {
   fetchProfile,
   fetchRoles,
@@ -24,9 +27,12 @@ import ProjectsCard from "../components/Profile/right/ProjectsCard";
 import EducationCard from "../components/Profile/right/EducationCard";
 import ResumeCard from "../components/Profile/right/ResumeCard";
 
+import GlassCard from "../components/dashboard/ui/GlassCard";
+
 import Loader from "../components/common/Loader";
 
 const ProfilePage = () => {
+
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
@@ -56,6 +62,7 @@ const ProfilePage = () => {
   }, [user]);
 
   const profileCompletion = useMemo(() => {
+
     if (!user) return 0;
 
     let score = 0;
@@ -66,17 +73,22 @@ const ProfilePage = () => {
     if (user.education?.length > 0) score += 25;
 
     return score;
+
   }, [user]);
 
   const handleChange = (e) => {
+
     setForm({
       ...form,
       [e.target.name]: e.target.value
     });
+
   };
 
   const handleUpdate = async () => {
+
     try {
+
       const payload = {
         targetRole: form.targetRole,
         skills: user.skills || []
@@ -84,13 +96,15 @@ const ProfilePage = () => {
 
       await dispatch(updateUserProfile(payload)).unwrap();
 
-      alert("Profile updated");
+      toast.success("Profile updated");
+
     } catch (err) {
-      console.error(err);
+      toast.error(err.message || "Failed to update profile");
     }
   };
 
   const handleAddSkill = async () => {
+
     if (!skillInput.trim()) return;
 
     const exists = user.skills.some(
@@ -100,29 +114,36 @@ const ProfilePage = () => {
     );
 
     if (exists) {
-      alert("Skill already added");
+      toast.warning("Skill already added");
       return;
     }
 
     try {
-      await dispatch(
-        addSkillToProfile({
-          name: skillInput,
-          level: skillLevel
-        })
-      ).unwrap();
 
-      setSkillInput("");
-    } catch (err) {
-      console.error(err);
-    }
+  await dispatch(
+    addSkillToProfile({
+      name: skillInput,
+      level: skillLevel
+    })
+  ).unwrap();
+
+  setSkillInput("");
+
+  toast.success("Skill added successfully");
+
+} catch (err) {
+
+  toast.error(err.message || "Failed to add skill");
+
+}
   };
 
   const handleDeleteSkill = async (name) => {
+
     try {
       await dispatch(deleteSkillFromProfile(name)).unwrap();
     } catch (err) {
-      console.error(err);
+      toast.error(err.message || "Failed to delete skill");
     }
   };
 
@@ -136,7 +157,19 @@ const ProfilePage = () => {
   };
 
   return (
+
     <ProfileLayout>
+      <ToastContainer
+  position="top-right"
+  autoClose={2500}
+  hideProgressBar={false}
+  newestOnTop
+  closeOnClick
+  pauseOnHover
+  draggable
+  theme="light"
+  toastClassName="!rounded-2xl !bg-white/80 !backdrop-blur-xl !text-slate-700 !shadow-xl"
+/>
 
       <ProfileTopBar logout={logout} />
 
@@ -145,47 +178,71 @@ const ProfilePage = () => {
         user={user}
       />
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+      {/* MAIN GRID */}
+      <div className="space-y-6 mt-6">
 
-        {/* LEFT */}
-        <div className="space-y-6">
-          <ProfileCard user={user} />
+        {/* ROW 1 */}
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 items-stretch">
 
-          <SkillsCard
-            user={user}
-            onDelete={handleDeleteSkill}
-          />
+          <GlassCard className="h-full min-h-[340px]">
+            <ProfileCard user={user} />
+          </GlassCard>
 
-          <AIInsightsCard
-            evaluatedSkills={user.evaluatedSkills}
-          />
-        </div>
-
-        {/* RIGHT */}
-        <div className="lg:col-span-2 space-y-6">
-
-          <PreferencesCard
-            form={form}
-            handleChange={handleChange}
-            handleUpdate={handleUpdate}
-            skillInput={skillInput}
-            setSkillInput={setSkillInput}
-            skillLevel={skillLevel}
-            setSkillLevel={setSkillLevel}
-            handleAddSkill={handleAddSkill}
-            roles={roles}
-          />
-
-          <EducationCard education={user.education} />
-
-          <ProjectsCard projects={user.projects} />
-
-          <ResumeCard user={user} />
+          <GlassCard className="h-full min-h-[340px]">
+            <PreferencesCard
+              form={form}
+              handleChange={handleChange}
+              handleUpdate={handleUpdate}
+              skillInput={skillInput}
+              setSkillInput={setSkillInput}
+              skillLevel={skillLevel}
+              setSkillLevel={setSkillLevel}
+              handleAddSkill={handleAddSkill}
+              roles={roles}
+            />
+          </GlassCard>
 
         </div>
+
+        {/* ROW 2 */}
+        <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 items-stretch">
+
+          <GlassCard className="h-full min-h-[320px]">
+            <SkillsCard
+              user={user}
+              onDelete={handleDeleteSkill}
+            />
+          </GlassCard>
+
+          <GlassCard className="h-full min-h-[320px]">
+            <AIInsightsCard
+              evaluatedSkills={user.evaluatedSkills}
+            />
+          </GlassCard>
+
+          <GlassCard className="h-full min-h-[320px]">
+            <EducationCard education={user.education} />
+          </GlassCard>
+
+        </div>
+
+        {/* ROW 3 */}
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 items-stretch">
+
+          <GlassCard className="h-full min-h-[320px]">
+            <ProjectsCard projects={user.projects} />
+          </GlassCard>
+
+          <GlassCard className="h-full min-h-[320px]">
+            <ResumeCard user={user} />
+          </GlassCard>
+
+        </div>
+
       </div>
 
     </ProfileLayout>
+
   );
 };
 

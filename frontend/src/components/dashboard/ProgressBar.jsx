@@ -1,4 +1,12 @@
 import { motion } from "framer-motion";
+import {
+  RadarChart,
+  PolarGrid,
+  PolarAngleAxis,
+  PolarRadiusAxis,
+  Radar,
+  ResponsiveContainer,
+} from "recharts";
 
 const ProgressBar = ({ percent }) => {
 
@@ -7,6 +15,30 @@ const ProgressBar = ({ percent }) => {
     if (percent >= 50) return "Making Progress";
     return "Needs Focus";
   };
+
+  // Dynamic radar data based on backend percent
+  const radarData = [
+    {
+      subject: "Skills",
+      value: Math.max(percent - 10, 20),
+    },
+    {
+      subject: "Projects",
+      value: Math.max(percent - 15, 15),
+    },
+    {
+      subject: "Practice",
+      value: Math.max(percent - 5, 25),
+    },
+    {
+      subject: "Interview",
+      value: Math.max(percent - 20, 10),
+    },
+    {
+      subject: "Readiness",
+      value: percent,
+    },
+  ];
 
   return (
     <>
@@ -26,7 +58,7 @@ const ProgressBar = ({ percent }) => {
       </div>
 
       {/* MAIN VISUAL */}
-      <div className="mt-6 flex items-center justify-between">
+      <div className="mt-6 flex items-center justify-between gap-4">
 
         {/* LEFT: BIG % */}
         <div>
@@ -34,44 +66,47 @@ const ProgressBar = ({ percent }) => {
             {percent}
             <span className="text-lg text-slate-400">%</span>
           </p>
+
           <p className="text-xs text-slate-400 mt-1">
             completion
           </p>
         </div>
 
-        {/* RIGHT: MINI PROGRESS RING */}
-        <div className="relative w-16 h-16">
-          <svg className="w-full h-full rotate-[-90deg]">
-            <circle
-              cx="32"
-              cy="32"
-              r="28"
-              stroke="#e5e7eb"
-              strokeWidth="5"
-              fill="none"
-            />
-            <motion.circle
-              cx="32"
-              cy="32"
-              r="28"
-              stroke="url(#gradient)"
-              strokeWidth="5"
-              fill="none"
-              strokeDasharray={175}
-              strokeDashoffset={175 - (175 * percent) / 100}
-              strokeLinecap="round"
-              initial={{ strokeDashoffset: 175 }}
-              animate={{ strokeDashoffset: 175 - (175 * percent) / 100 }}
-              transition={{ duration: 0.8 }}
-            />
-            <defs>
-              <linearGradient id="gradient">
-                <stop offset="0%" stopColor="#6366f1" />
-                <stop offset="100%" stopColor="#a855f7" />
-              </linearGradient>
-            </defs>
-          </svg>
-        </div>
+        {/* RIGHT: RADAR CHART */}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.6 }}
+          className="w-40 h-32"
+        >
+          <ResponsiveContainer width="100%" height="100%">
+            <RadarChart data={radarData}>
+              
+              <PolarGrid stroke="#d8d4fe" />
+
+              <PolarAngleAxis
+                dataKey="subject"
+                tick={{ fontSize: 9, fill: "#64748b" }}
+              />
+
+              <PolarRadiusAxis
+                angle={30}
+                domain={[0, 100]}
+                tick={false}
+                axisLine={false}
+              />
+
+              <Radar
+                name="Progress"
+                dataKey="value"
+                stroke="#818cf8"
+                fill="#a78bfa"
+                fillOpacity={0.45}
+                strokeWidth={2}
+              />
+            </RadarChart>
+          </ResponsiveContainer>
+        </motion.div>
 
       </div>
 

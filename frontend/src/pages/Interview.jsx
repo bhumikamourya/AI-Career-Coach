@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import { motion } from "framer-motion";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 import {
   generateInterview,
@@ -67,7 +69,7 @@ const Interview = () => {
 
     } catch (err) {
 
-      alert("Failed to start interview");
+      toast.error("Failed to start interview");
 
     } finally {
 
@@ -105,38 +107,38 @@ const Interview = () => {
       return;
     }
 
-    setLoading(true);
+  setLoading(true);
 
-    try {
+try {
 
-      await submitInterview({
-        sessionId,
-        answers: updated
-      });
+  const answeredCount =
+    updated.filter(a => a?.trim()).length;
 
-      navigate(`/interview/result/${sessionId}`);
+  if (answeredCount === 0) {
 
-       const answeredCount =
-      updated.filter(a => a?.trim()).length;
+    toast.error("Please answer at least one question.");
 
-    if (answeredCount === 0) {
+    setLoading(false);
 
-      alert("Please answer at least one question.");
+    return;
+  }
 
-      setLoading(false);
+  await submitInterview({
+    sessionId,
+    answers: updated
+  });
 
-      return;
-    }
+  navigate(`/interview/result/${sessionId}`);
 
-    } catch (err) {
+} catch (err) {
 
-      alert("Submit failed");
+  toast.error("Submit failed");
 
-    } finally {
+} finally {
 
-      setLoading(false);
+  setLoading(false);
 
-    }
+}
   };
 
   const currentQuestion = questions[index];
@@ -152,7 +154,7 @@ const Interview = () => {
 
     return (
 
-      <div className="min-h-screen w-full bg-[#f3f4fb] p-4 md:p-10 relative overflow-hidden">
+      <div className="min-h-screen w-full bg-gradient-to-tr from-[#f0f2f5] via-[#f5f0ff] to-[#f3e3d5]  p-4 md:p-10 relative overflow-hidden">
 
         {/* BACKGROUND */}
         <div className="absolute inset-0 z-0 opacity-60 pointer-events-none">
@@ -214,7 +216,7 @@ const Interview = () => {
 
     return (
 
-      <div className="min-h-screen w-full bg-[#f3f4fb] p-4 md:p-10 relative overflow-hidden">
+      <div className="min-h-screen w-full bg-gradient-to-tr from-[#f0f2f5] via-[#f5f0ff] to-[#f3e3d5]  p-4 md:p-10 relative overflow-hidden">
 
         {/* BACKGROUND */}
         <div className="absolute inset-0 z-0 opacity-60 pointer-events-none">
@@ -253,207 +255,543 @@ const Interview = () => {
 
   // MAIN UI
 
-  return (
+  {/* MAIN UI */}
 
-    <div className="min-h-screen w-full bg-[#f3f4fb] text-slate-800 p-4 md:p-10 relative overflow-hidden">
+return (
 
-      {/* BACKGROUND */}
-      <div className="absolute inset-0 z-0 opacity-60 pointer-events-none">
+  <div
 
-        <div className="absolute top-[-5%] left-[-10%] w-[500px] h-[500px] bg-[#d9d4ff] rounded-full blur-[110px]"></div>
+    className="
+      min-h-screen
+      w-full
+      relative
+      overflow-hidden
+      bg-gradient-to-tr from-[#f0f2f5] via-[#f5f0ff] to-[#f3e3d5]
+      text-slate-800
+      px-4 md:px-6
+      py-6 md:py-10
+    "
+  > <ToastContainer
+  position="top-right"
+  autoClose={2500}
+  hideProgressBar={false}
+  newestOnTop
+  closeOnClick
+  pauseOnHover
+  theme="light"
+/>
 
-        <div className="absolute bottom-[-10%] right-[-5%] w-[500px] h-[500px] bg-[#ffecde] rounded-full blur-[110px]"></div>
+    {/* BACKGROUND */}
+    <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
 
-      </div>
+      <div
+        className="
+          absolute
+          top-[-120px]
+          left-[-120px]
+          w-[380px]
+          h-[380px]
+          md:w-[520px]
+          md:h-[520px]
+          rounded-full
+          
+          blur-[120px]
+          opacity-70
+        "
+      />
 
-      <div className="max-w-5xl mx-auto relative z-10">
+      <div
+        className="
+          absolute
+          bottom-[-120px]
+          right-[-120px]
+          w-[380px]
+          h-[380px]
+          md:w-[520px]
+          md:h-[520px]
+          rounded-full
+    
+          blur-[120px]
+          opacity-70
+        "
+      />
 
-        {/* TOP BAR */}
+    </div>
 
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
+    {/* GRID OVERLAY */}
+    <div
+      className="
+        absolute inset-0 z-0 opacity-[0.03]
+        [background-image:linear-gradient(to_right,#000_1px,transparent_1px),linear-gradient(to_bottom,#000_1px,transparent_1px)]
+        [background-size:40px_40px]
+      "
+    />
+
+    <div className="max-w-6xl mx-auto relative z-10">
+
+      {/* HEADER */}
+      <motion.div
+
+        initial={{
+          opacity: 0,
+          y: 20,
+        }}
+
+        animate={{
+          opacity: 1,
+          y: 0,
+        }}
+
+        className="
+          
+          backdrop-blur-2xl
+          
+          rounded-[2.5rem]
+          
+          p-6 md:p-8
+          mb-8
+        "
+      >
+
+        <div
+          className="
+            flex flex-col lg:flex-row
+            lg:items-center
+            lg:justify-between
+            gap-6
+          "
+        >
+
+          {/* LEFT */}
+          <div className="flex items-center gap-5">
+
+            {/* ICON */}
+            <div
+              className="
+                relative
+                shrink-0
+                w-16 h-16
+                rounded-[1.7rem]
+                bg-gradient-to-br
+                from-[#9689ff]
+                to-[#ffbe94]
+                flex items-center justify-center
+                shadow-[0_15px_40px_rgba(150,137,255,0.35)]
+              "
+            >
+
+              <span className="text-3xl text-white">
+                🎤
+              </span>
+
+              {/* pulse */}
+              <div
+                className="
+                  absolute inset-0
+                  rounded-[1.7rem]
+                  border-2 border-[#9689ff]/30
+                  animate-pulse
+                "
+              />
+
+            </div>
+
+            {/* TEXT */}
+            <div>
+
+              <h1
+                className="
+                  text-2xl md:text-4xl
+                  font-black
+                  tracking-tight
+                  text-[#818191]
+                "
+              >
+                AI Interview
+              </h1>
+
+              <p
+                className="
+                  mt-2
+                  text-slate-500
+                  font-medium
+                  text-sm md:text-base
+                "
+              >
+                Simulate a real-world technical interview experience
+              </p>
+
+            </div>
+
+          </div>
+
+          </div>
+
+      </motion.div>
+
+      {/* PROGRESS */}
+      <motion.div
+
+        initial={{
+          opacity: 0,
+          y: 20,
+        }}
+
+        animate={{
+          opacity: 1,
+          y: 0,
+        }}
+
+        transition={{
+          delay: 0.05,
+        }}
+
+        className="
+          bg-gradient-to-br from-[#d9d4ff]/40 to-[#ffecde]/40 
+          backdrop-blur-2xl
+          border border-white/60
+          rounded-[2rem]
+          shadow-xl
+          p-6
+          mb-8
+        "
+      >
+
+        {/* TOP */}
+        <div className="flex items-center justify-between mb-4">
 
           <div>
 
-            <h1 className="text-4xl font-extrabold text-[#3b3a4a] tracking-tight">
-
-              AI Interview
-
-            </h1>
-
-            <p className="text-slate-500 font-medium italic">
-
-              Simulate a real-world technical interview
-
+            <p className="text-xs uppercase tracking-[0.2em] text-slate-400 font-black">
+              Interview Progress
             </p>
 
-          </div>
-
-        </div>
-
-        {/* PROGRESS SECTION */}
-
-        <div className="bg-white/50 backdrop-blur-xl border border-white/60 p-6 rounded-[2rem] shadow-lg mb-8">
-
-          {/* TOP ROW */}
-          <div className="flex justify-between items-center mb-3">
-
-            <span className="text-sm font-bold text-[#3b3a4a]">
-
-              AI Interview Progress
-
-            </span>
-
-            <span className="text-sm font-black text-[#9689ff]">
-
-              {index + 1} / {questions.length}
-
-            </span>
+            <h3 className="text-lg font-extrabold text-[#3b3a4a] mt-1">
+              Question {index + 1} of {questions.length}
+            </h3>
 
           </div>
 
-          {/* PROGRESS BAR */}
-          <div className="w-full bg-slate-200 h-3 rounded-full overflow-hidden">
-
-            <motion.div
-              initial={{ width: 0 }}
-              animate={{ width: `${progress}%` }}
-              transition={{ duration: 0.5, ease: "easeOut" }}
-              className="h-full bg-gradient-to-r from-[#9689ff] to-[#ffbe94]"
-            />
-
-          </div>
-
-        </div>
-
-        {/* MAIN CARD */}
-
-        <div className="bg-white/50 backdrop-blur-xl border border-white/60 rounded-[2.5rem] shadow-xl p-6 md:p-8">
-
-          {/* QUESTION HEADER */}
-
-          <div className="flex items-center gap-4 mb-8">
-
-            <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-[#9689ff] to-[#ffbe94] flex items-center justify-center text-white font-extrabold text-lg shadow-lg">
-
-              {index + 1}
-
-            </div>
-
-            <div>
-
-              <p className="text-xs uppercase tracking-widest text-slate-400 font-bold">
-
-                Technical Question
-
-              </p>
-
-              <h2 className="text-2xl font-extrabold text-[#3b3a4a]">
-
-                Solve Carefully
-
-              </h2>
-
-            </div>
-
-          </div>
-
-          {/* QUESTION */}
-
-          <motion.div
-            key={index}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3 }}
-            className="bg-white/60 border border-white rounded-[2rem] p-8 shadow-sm"
+          <div
+            className="
+              px-4 py-2
+              text-[#9689ff]
+              font-black
+              text-2xl
+            "
           >
 
-            <p className="text-lg leading-8 text-[#3b3a4a] font-semibold">
+            {Math.round(progress)}%
 
-              {currentQuestion}
+          </div>
 
-            </p>
+        </div>
+
+        {/* BAR */}
+        <div
+          className="
+            w-full
+            h-4
+            rounded-full
+            bg-slate-200/70
+            overflow-hidden
+            relative
+          "
+        >
+
+          <motion.div
+
+            initial={{
+              width: 0,
+            }}
+
+            animate={{
+              width: `${progress}%`,
+            }}
+
+            transition={{
+              duration: 0.6,
+              ease: "easeOut",
+            }}
+
+            className="
+              h-full
+              rounded-full
+              bg-gradient-to-r
+              from-[#9689ff]
+              via-[#a78bfa]
+              to-[#ffbe94]
+              relative
+            "
+          >
+
+            <div
+              className="
+                absolute inset-0
+                bg-white/20
+                animate-pulse
+              "
+            />
 
           </motion.div>
 
-          {/* ANSWER */}
+        </div>
 
-          <div className="mt-8">
+      </motion.div>
 
-            <div className="flex justify-between items-center mb-3">
+      {/* MAIN INTERVIEW CARD */}
+      <motion.div
 
-              <h3 className="text-lg font-extrabold text-[#3b3a4a]">
+        key={index}
 
-                Your Answer
+        initial={{
+          opacity: 0,
+          y: 25,
+        }}
 
-              </h3>
+        animate={{
+          opacity: 1,
+          y: 0,
+        }}
 
-              <span className="text-xs text-slate-400 font-semibold">
+        transition={{
+          duration: 0.35,
+        }}
 
-                Be practical & detailed
+        className="
+          relative overflow-hidden
+          bg-gradient-to-br from-[#d9d4ff]/40 to-[#ffecde]/40 
+          backdrop-blur-2xl
+          border border-white/60
+          rounded-[2.8rem]
+          shadow-[0_20px_60px_rgba(0,0,0,0.08)]
+          p-6 md:p-10
+        "
+      >
 
-              </span>
+        {/* INNER GLOW */}
+        <div
+          className="
+            absolute
+            top-[-20%]
+            right-[-10%]
+            w-[260px]
+            h-[260px]
+            rounded-full
+            bg-gradient-to-br from-[#d9d4ff]/40 to-[#ffecde]/40 
+            blur-[110px]
+            opacity-40
+          "
+        />
 
-            </div>
+        {/* QUESTION HEADER */}
+        <div className="relative z-10 flex items-center gap-5 mb-8">
 
-            <textarea
-              value={answer}
-              onChange={(e) => setAnswer(e.target.value)}
-              rows={10}
-              placeholder="Write your technical answer here..."
-              className="w-full p-6 rounded-[2rem] bg-white/70 border border-white shadow-md outline-none resize-none text-slate-700 placeholder:text-slate-400 focus:ring-4 focus:ring-[#d9d4ff] focus:border-[#9689ff] transition-all duration-300"
-            />
+          {/* NUMBER */}
+          <div
+            className="
+              w-16 h-16
+              rounded-[1.8rem]
+              bg-gradient-to-br
+              from-[#9689ff]
+              to-[#ffbe94]
+              flex items-center justify-center
+              text-white
+              text-2xl
+              font-black
+              shadow-[0_15px_35px_rgba(150,137,255,0.35)]
+            "
+          >
 
-            <div className="flex justify-end mt-3">
-
-              <p className="text-xs text-slate-400 font-medium">
-
-                Answer auto-saved locally
-
-              </p>
-
-            </div>
+            {index + 1}
 
           </div>
 
-          {/* ACTIONS */}
+          {/* TEXT */}
+          <div>
 
-          <div className="flex flex-col sm:flex-row justify-between gap-4 mt-8">
+            <p className="text-xs uppercase tracking-[0.25em] text-slate-400 font-black">
+              Technical Question
+            </p>
 
-            <button
-              onClick={handlePrev}
-              disabled={index === 0}
-              className="px-8 py-4 rounded-2xl bg-white border border-slate-200 font-bold text-slate-600 disabled:opacity-40 shadow-sm"
-            >
-
-              Previous Question
-
-            </button>
-
-            <button
-              onClick={handleNext}
-              disabled={loading}
-              className={`px-8 py-4 rounded-2xl text-white font-bold shadow-lg disabled:opacity-70 ${index === questions.length - 1
-                  ? "bg-gradient-to-r from-emerald-500 to-green-400"
-                  : "bg-gradient-to-r from-[#818cf8] to-[#a78bfa]"
-                }`}
-            >
-
-              {loading
-                ? "Submitting..."
-                : index === questions.length - 1
-                  ? "Finish Interview"
-                  : "Next Question"}
-
-            </button>
+            <h2 className="text-2xl md:text-3xl font-black text-[#35344a] mt-1">
+              Solve Carefully
+            </h2>
 
           </div>
 
         </div>
 
-      </div>
+        {/* QUESTION */}
+        <div
+          className="
+            relative z-10
+            bg-white/40
+            border border-white
+            rounded-[2rem]
+            p-6 md:p-8
+            shadow-lg
+          "
+        >
+
+          <p
+            className="
+              text-lg md:text-[1.35rem]
+              leading-8 md:leading-10
+              text-[#3b3a4a]
+              font-semibold
+            "
+          >
+
+            {currentQuestion}
+
+          </p>
+
+        </div>
+
+        {/* ANSWER */}
+        <div className="relative z-10 mt-8">
+
+          <div className="flex justify-between items-center mb-4">
+
+            <div>
+
+              <h3 className="text-xl font-black text-[#3b3a4a]">
+                Your Answer
+              </h3>
+
+              <p className="text-sm text-slate-400 mt-1">
+                Explain your approach clearly and professionally
+              </p>
+
+            </div>
+
+            
+
+              
+          </div>
+
+          <textarea
+
+            value={answer}
+
+            onChange={(e) => setAnswer(e.target.value)}
+
+            rows={10}
+
+            placeholder="Write your technical answer here..."
+
+            className="
+              w-full
+              resize-none
+              rounded-[2rem]
+              border border-white
+              bg-white/40
+              p-6
+              text-slate-700
+              placeholder:text-slate-400
+              shadow-lg
+              outline-none
+              transition-all duration-300
+              
+              focus:ring-[#d9d4ff]
+              
+              text-[15px]
+              leading-8
+            "
+          />
+
+        </div>
+
+        {/* ACTIONS */}
+        <div
+          className="
+            relative z-10
+            flex flex-col sm:flex-row
+            justify-between
+            gap-4
+            mt-8
+          "
+        >
+
+          {/* PREV */}
+          <motion.button
+
+            whileHover={{
+              scale: 1.02,
+            }}
+
+            whileTap={{
+              scale: 0.97,
+            }}
+
+            onClick={handlePrev}
+
+            disabled={index === 0}
+
+            className="
+              px-8 py-4
+              rounded-2xl
+              bg-white/80
+              border border-white
+              shadow-md
+              font-bold
+              text-slate-600
+              disabled:opacity-40
+            "
+          >
+
+            ← Previous Question
+
+          </motion.button>
+
+          {/* NEXT */}
+          <motion.button
+
+            whileHover={{
+              scale: 1.02,
+            }}
+
+            whileTap={{
+              scale: 0.97,
+            }}
+
+            onClick={handleNext}
+
+            disabled={loading}
+
+            className={`
+              px-8 py-4
+              rounded-2xl
+              text-white
+              font-black
+              shadow-[0_15px_35px_rgba(0,0,0,0.12)]
+              transition-all
+              ${
+                index === questions.length - 1
+                  ? "bg-gradient-to-r from-emerald-500 to-green-400"
+                  : "bg-gradient-to-r from-[#818cf8] to-[#a78bfa]"
+              }
+            `}
+          >
+
+            {loading
+              ? "Submitting..."
+              : index === questions.length - 1
+              ? "Finish Interview"
+              : "Next Question →"}
+
+          </motion.button>
+
+        </div>
+
+      </motion.div>
 
     </div>
-  );
+
+  </div>
+
+);
 };
 
 export default Interview;

@@ -2,7 +2,7 @@ import { motion, AnimatePresence } from "framer-motion";
 
 const SkillsCard = ({ user, onDelete }) => {
     return (
-        <div className="bg-white/50 backdrop-blur-xl border border-white/60 p-8 rounded-[2.5rem] shadow-xl min-h-[260px] flex flex-col">
+        <div className=" bg-gradient-to-br from-[#d9d4ff]/40 to-[#ffecde]/40 backdrop-blur-xl border border-white/60 p-8 rounded-[2.5rem] shadow-xl min-h-[260px] flex flex-col">
 
             <h3 className="text-lg font-extrabold text-[#3b3a4a] mb-5">
                 Technical Stack
@@ -18,10 +18,10 @@ const SkillsCard = ({ user, onDelete }) => {
                             exit={{ opacity: 0, scale: 0.5 }}
                             className={`group flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold shadow-sm ${
                                 skill.level === "Advanced"
-                                    ? "bg-emerald-100 text-emerald-700"
+                                    ? "bg-emerald-100 text-gray-700"
                                     : skill.level === "Intermediate"
-                                    ? "bg-amber-100 text-amber-800"
-                                    : "bg-rose-100 text-rose-700"
+                                    ? "bg-amber-100 text-gray-700"
+                                    : "bg-rose-100 text-gray-700"
                             }`}
                         >
                             {skill.name}

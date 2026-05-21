@@ -1,6 +1,6 @@
 const ProjectsCard = ({ projects }) => {
     return (
-        <div className="bg-white/50 backdrop-blur-xl border border-white/60 p-8 rounded-[2.5rem] shadow-xl min-h-[260px]">
+        <div className="bg-gradient-to-br from-[#d9d4ff]/40 to-[#ffecde]/40 backdrop-blur-xl border border-white/60 p-8 rounded-[2.5rem] shadow-xl min-h-[260px] flex flex-col">
 
             <h3 className="text-lg font-extrabold text-[#3b3a4a] mb-4">
                 Projects
@@ -19,8 +19,8 @@ const ProjectsCard = ({ projects }) => {
                         </div>
                     ))
                 ) : (
-                    <div className="flex flex-col items-center justify-center pt-10 opacity-40">
-                        <p className="text-xs text-slate-500 font-bold italic">
+                    <div >
+                        <p className="text-xs text-slate-400 font-medium italic">
                             No projects yet
                         </p>
                     </div>

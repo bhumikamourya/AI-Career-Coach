@@ -9,8 +9,10 @@ const PreferencesCard = ({
     handleAddSkill,
     roles
 }) => {
+
     return (
-        <div className="bg-white/50 backdrop-blur-xl border border-white/60 p-8 rounded-[2.5rem] shadow-xl">
+
+        <div className="bg-gradient-to-br from-[#d9d4ff]/40 to-[#ffecde]/40 backdrop-blur-xl border border-white/60 p-5 sm:p-7 md:p-[50px] rounded-[2.5rem] shadow-xl w-full overflow-hidden">
 
             <h3 className="text-xl font-extrabold text-[#3b3a4a] mb-6">
                 Update Preferences
@@ -22,8 +24,9 @@ const PreferencesCard = ({
                     name="targetRole"
                     value={form.targetRole}
                     onChange={handleChange}
-                    className="w-full px-5 py-4 rounded-2xl bg-indigo-100/30 shadow-md text-slate-500 outline-none"
+                    className="w-full px-5 py-4 rounded-2xl bg-white/80 shadow-md text-slate-500 outline-none"
                 >
+
                     <option value="">Select Role</option>
 
                     {roles.map((role) => (
@@ -31,6 +34,7 @@ const PreferencesCard = ({
                             {role.name}
                         </option>
                     ))}
+
                 </select>
 
                 <button
@@ -39,23 +43,24 @@ const PreferencesCard = ({
                 >
                     Save Preferences
                 </button>
+
             </div>
 
             <div className="pt-6 border-t border-slate-100">
 
-                <div className="flex flex-col md:flex-row gap-3">
+                <div className="flex flex-col xl:flex-row gap-3 w-full">
 
                     <input
                         value={skillInput}
                         onChange={(e) => setSkillInput(e.target.value)}
                         placeholder="Skill Name"
-                        className="flex-1 px-5 py-4 rounded-2xl bg-indigo-100/30 shadow-md"
+                        className="flex-1 min-w-0 px-5 py-4 rounded-2xl bg-white/80 shadow-md"
                     />
 
                     <select
                         value={skillLevel}
                         onChange={(e) => setSkillLevel(e.target.value)}
-                        className="px-5 py-4 rounded-2xl bg-indigo-100/30 shadow-md"
+                        className="w-full xl:w-[180px] px-5 py-4 rounded-2xl bg-white/80 shadow-md"
                     >
                         <option>Beginner</option>
                         <option>Intermediate</option>
@@ -64,7 +69,7 @@ const PreferencesCard = ({
 
                     <button
                         onClick={handleAddSkill}
-                        className="px-8 py-3 bg-gradient-to-r from-[#818cf8] to-[#a78bfa] text-white font-bold rounded-2xl shadow-lg"
+                        className="w-full xl:w-auto px-8 py-4 bg-gradient-to-r from-[#818cf8] to-[#a78bfa] text-white font-bold rounded-2xl shadow-lg whitespace-nowrap"
                     >
                         Add
                     </button>
@@ -74,6 +79,7 @@ const PreferencesCard = ({
             </div>
 
         </div>
+
     );
 };
 

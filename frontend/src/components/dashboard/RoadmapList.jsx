@@ -16,13 +16,13 @@ const RoadmapList = ({ roadmap, progress, markComplete }) => {
 
         {/* subtle divider badge */}
         <span className="text-xs text-slate-400 bg-white/40 px-3 py-1 rounded-full border border-white/50">
-          {roadmap.length} Topics
+          {/* {roadmap.length} Topics */}
         </span>
       </div>
 
       {/* LIST */}
-      <div className="space-y-4 relative z-10">
-        {roadmap.map((item, i) => {
+      {/* <div className="space-y-4 relative z-10"> */}
+        {/* {roadmap.map((item, i) => {
           const p = progress.find((x) => x.topic === item.topic);
 
           return (
@@ -34,8 +34,48 @@ const RoadmapList = ({ roadmap, progress, markComplete }) => {
               index={i}
             />
           );
-        })}
+        })} */}
+      {/* </div> */}
+      {/* LIST */}
+<div className="space-y-4 relative z-10 min-h-[420px] flex flex-col justify-center">
+
+  {roadmap?.length > 0 ? (
+    <>
+      {roadmap.map((item, i) => {
+        const p = progress.find((x) => x.topic === item.topic);
+
+        return (
+          <RoadmapItem
+            key={i}
+            item={item}
+            progress={p}
+            markComplete={markComplete}
+            index={i}
+          />
+        );
+      })}
+    </>
+  ) : (
+
+    <div className="flex flex-col items-center justify-center text-center py-16">
+
+      <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-indigo-100 to-purple-100 flex items-center justify-center mb-6 shadow-inner">
+        <span className="text-3xl">🛣️</span>
       </div>
+
+      <h3 className="text-xl font-bold text-slate-600 mb-3">
+        Generate Your Roadmap
+      </h3>
+
+      <p className="text-slate-400 max-w-md leading-relaxed">
+        Add your skills and target role to unlock your personalized AI-powered learning roadmap.
+      </p>
+
+    </div>
+
+  )}
+
+</div>
     </>
   );
 };

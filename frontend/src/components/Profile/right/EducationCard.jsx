@@ -1,6 +1,6 @@
 const EducationCard = ({ education }) => {
     return (
-        <div className="bg-white/50 backdrop-blur-xl border border-white/60 p-8 rounded-[2.5rem] shadow-xl min-h-[200px]">
+        <div className="bg-gradient-to-br from-[#d9d4ff]/40 to-[#ffecde]/40 backdrop-blur-xl border border-white/60 p-8 rounded-[2.5rem] shadow-xl min-h-[260px] flex flex-col">
 
             <h3 className="text-lg font-extrabold text-[#3b3a4a] mb-4">
                 Education

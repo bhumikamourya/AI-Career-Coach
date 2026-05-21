@@ -18,7 +18,7 @@ const NavigationButtons = ({
       <button
         onClick={onPrev}
         disabled={isFirst}
-        className="px-6 py-2.5 rounded-xl bg-white border border-slate-200 text-slate-600 font-semibold hover:bg-slate-50 disabled:opacity-40 transition-all"
+        className="px-6 py-2.5 rounded-xl bg-white border border-indigo-500 shadow-md shadow-indigo-100 text-indigo-500 font-bold hover:bg-slate-50 disabled:opacity-40 transition-all"
       >
         Previous
       </button>
@@ -28,7 +28,7 @@ const NavigationButtons = ({
         <motion.button
           whileTap={{ scale: 0.95 }}
           onClick={onNext}
-          className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-[#818cf8] to-[#a78bfa] text-white font-bold shadow-lg hover:brightness-105 transition-all"
+          className="px-6 py-2.5 shadow-md rounded-xl bg-gradient-to-r from-[#818cf8] to-[#a78bfa] text-white font-bold border border-indigo-500 hover:brightness-105 transition-all"
         >
           Next
         </motion.button>

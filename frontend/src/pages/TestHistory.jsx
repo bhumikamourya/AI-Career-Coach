@@ -59,7 +59,7 @@ const TestHistoryPage = () => {
   }
 
   return (
-    <div className="min-h-screen w-full bg-[#f3f4fb] relative overflow-x-hidden p-4 md:p-8">
+    <div className="min-h-screen w-full bg-gradient-to-tr from-[#f0f2f5] via-[#f5f0ff] to-[#f3e3d5] relative overflow-x-hidden p-4 md:p-8">
 
       {/* Background blobs */}
       <div className="absolute inset-0 z-0 opacity-60 pointer-events-none">

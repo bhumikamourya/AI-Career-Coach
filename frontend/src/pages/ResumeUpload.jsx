@@ -2,6 +2,8 @@ import { useState } from "react";
 import { uploadResume } from "../services/api";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import { useDispatch } from "react-redux";
 import { uploadResumeFile } from "../redux/slices/resumeSlice";
 
@@ -30,7 +32,7 @@ const ResumeUpload = () => {
 
   const handleUpload = async () => {
     if (!file) {
-      alert("Please select a file");
+      toast.error("Please select a file");
       return;
     }
 
@@ -44,7 +46,7 @@ const ResumeUpload = () => {
        const data = result?.payload;
 
     if (!data) {
-      alert("Upload failed - no response");
+      toast.error("Upload failed - no response");
       return;
     }
 
@@ -67,20 +69,27 @@ const ResumeUpload = () => {
       localStorage.setItem("gap", JSON.stringify(data.gap || []));
       localStorage.setItem("roadmap", JSON.stringify(data.roadmap || []));
 
-      alert("Resume Uploaded & Analyzed");
-
+      toast.success("Resume Uploaded & Analyzed");
       navigate("/profile");
     } catch (err) {
       console.error(err);
-      alert("Upload failed");
+      toast.error("Upload failed");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-[#f3f4fb] flex items-center justify-center p-6 relative overflow-hidden">
-
+    <div className="min-h-screen bg-gradient-to-tr from-[#f0f2f5] via-[#f5f0ff] to-[#f3e3d5]  flex items-center justify-center p-6 relative overflow-hidden">
+<ToastContainer
+  position="top-right"
+  autoClose={2500}
+  hideProgressBar={false}
+  newestOnTop
+  closeOnClick
+  pauseOnHover
+  theme="light"
+/>
       {/* Background Glow */}
       <div className="absolute inset-0 z-0 opacity-60 pointer-events-none">
         <div className="absolute top-[-10%] left-[-10%] w-[400px] h-[400px] bg-[#d9d4ff] rounded-full blur-[100px]" />

@@ -16,7 +16,9 @@ const RoadmapPreview = ({ roadmap }) => {
   };
 
   return (
-    <div className="bg-white/50 backdrop-blur-xl border border-white/60 p-8 rounded-[2.5rem] shadow-xl relative overflow-hidden">
+    <div className="bg-gradient-to-br
+        from-[#d9d4ff]/40
+        to-[#ffecde]/40 backdrop-blur-xl border border-white/60 p-8 rounded-[2.5rem] shadow-xl relative overflow-hidden">
 
       {/* Glow */}
       <div className="absolute top-[-30%] right-[-10%] w-[250px] h-[250px] bg-purple-200 rounded-full blur-[100px] opacity-40" />
@@ -39,7 +41,7 @@ const RoadmapPreview = ({ roadmap }) => {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: i * 0.05 }}
-            className="flex justify-between items-center p-4 bg-white/60 rounded-2xl border border-white hover:shadow-sm transition-all"
+            className="flex justify-between items-center p-4 bg-white/50 rounded-2xl border border-white hover:shadow-sm transition-all"
           >
             {/* LEFT */}
             <div>
