@@ -3,12 +3,13 @@
 > Transforming unstructured placement preparation into a **guided, data-driven, and personalized journey**
 
 ## Demo
+https://arynexa.netlify.app/
 
 ## Screenshots
 
 ### Dashboard
 
-(screenshot here)
+(screenshot )
 
 ### Roadmap System
 
@@ -97,14 +98,3 @@ npm run dev
 * Advanced LLM-based evaluation
 * Company-specific preparation modules
 * Real-time AI coaching feedback
-
-## Contributors
-
-* Khushboo Chawla
-* Bhumika Mourya
-* Nidhi Pawar
-* Khushi Khade
-
-## Support
-
-If you find this project useful, consider giving it a **star ⭐** on GitHub.
