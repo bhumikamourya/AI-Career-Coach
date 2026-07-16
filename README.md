@@ -2,23 +2,6 @@
 
 > Transforming unstructured placement preparation into a **guided, data-driven, and personalized journey**
 
-## Demo
-https://arynexa.netlify.app/
-
-## Screenshots
-
-### Dashboard
-
-(screenshot )
-
-### Roadmap System
-
-(screenshot here)
-
-### AI Mock Interview
-
-(screenshot here)
-
 ## Overview
 
 The **AI-Based Career Coach & Interview Preparation Platform** is an intelligent system that helps students prepare for placements in a **structured and personalized way**.
