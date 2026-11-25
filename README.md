@@ -1,83 +1,174 @@
 # AI-Based Career Coach & Interview Preparation Platform
 
-> Transforming unstructured placement preparation into a **guided, data-driven, and personalized journey**
+## About the Project
 
-## Overview
+AI-Based Career Coach is a web application built to help students prepare for placement opportunities.
 
-The **AI-Based Career Coach & Interview Preparation Platform** is an intelligent system that helps students prepare for placements in a **structured and personalized way**.
+Students often find it difficult to decide what to learn, which skills they need to improve, and how to track their preparation. This project tries to make that process easier by analyzing a user's skills, identifying gaps based on their target role, and suggesting a learning roadmap.
 
-It analyzes user skills, identifies gaps based on target roles, and generates a **dynamic roadmap**, combined with practice, testing, and AI-based interview evaluation.
+It also provides practice modules, mock tests, AI-based interview preparation, and a dashboard to track progress.
 
-## Key Features
+## Features
 
-*  **Skill Gap Detection** – Compare user skills with job role requirements
-*  **Personalized Roadmap** – Step-by-step learning path
-*  **Practice Modules** – DSA, Aptitude, Core Subjects
-*  **Mock Tests** – Performance tracking & feedback
-*  **AI Mock Interview** – Role-based questions + answer evaluation
-*  **Smart Dashboard** – Progress, weaknesses & readiness score
-*  **Adaptive Learning Loop** – Roadmap updates based on performance
+- **User Authentication:** Register and log in to access the platform.
+- **Resume Upload:** Upload your resume for skill analysis.
+- **Resume Builder:** Create and manage your resume.
+- **Skill Gap Analysis:** Identify skills that need improvement based on your selected role.
+- **Learning Roadmap:** Get a roadmap based on your skill gaps.
+- **Practice:** Work on placement preparation topics.
+- **Mock Tests:** Test your knowledge and track your performance.
+- **AI Mock Interview:** Practice interview questions and get AI-assisted feedback.
+- **Dashboard:** View your readiness score, current preparation stage, and progress.
+- **Progress Tracking:** Keep track of your preparation over time.
 
 ## How It Works
 
-```
-User → Input Skills / Resume  
-     → AI Skill Analysis  
-     → Skill Gap Detection  
-     → Roadmap Generation  
-     → Practice + Tests  
-     → AI Interview  
-     → Readiness Score  
-     → Repeat until job-ready
-```
+1. Create an account and complete your profile.
+2. Add your skills or upload your resume.
+3. Select the role you want to prepare for.
+4. Get your skill analysis and identify areas that need improvement.
+5. Follow the suggested learning roadmap.
+6. Practice and attempt mock tests.
+7. Use the AI interview feature for interview preparation.
+8. Track your progress through the dashboard.
 
-## Tech Stack
+## Technologies Used
 
 **Frontend**
-
-* React.js
-* Tailwind CSS
+- React.js
+- Vite
+- Tailwind CSS
+- Redux Toolkit
+- React Router DOM
+- Axios
+- Framer Motion
+- Recharts
+- Lucide React
 
 **Backend**
+- Node.js
+- Express.js
+- MongoDB
+- Mongoose
+- JWT
+- Bcrypt.js
+- Multer
+- Axios
 
-* Node.js
-* Express.js
-
-**Database**
-
-* MongoDB
+**AI Integration**
+- Google Gemini API
 
 **Tools**
+- Git and GitHub
+- Postman
+- VS Code
 
-* Git & GitHub
-* Postman
-* VS Code
+## Project Structure
 
-## Setup Instructions
+```text
+AI-Career-Coach/
+├── backend/
+│   ├── config/
+│   ├── controllers/
+│   ├── middlewares/
+│   ├── models/
+│   ├── routes/
+│   ├── services/
+│   ├── utils/
+│   ├── server.js
+│   └── package.json
+│
+├── frontend/
+│   ├── public/
+│   ├── src/
+│   │   ├── components/
+│   │   ├── hooks/
+│   │   ├── pages/
+│   │   ├── redux/
+│   │   ├── services/
+│   │   └── ...
+│   └── package.json
+│
+└── README.md
+```
+
+## Getting Started
+
+### Prerequisites
+
+- Node.js and npm
+- MongoDB connection
+- Gemini API key
+
+### 1. Clone the Repository
 
 ```bash
-# Clone repo
-https://github.com/bhumikamourya/AI-Career-Coach.git
+git clone https://github.com/bhumikamourya/AI-Career-Coach.git
+cd AI-Career-Coach
+```
 
-# Install frontend
-cd frontend
-npm install
-npm start
+### 2. Set Up the Backend
 
-# Install backend
-cd ../backend
-npm install
+```bash
+cd backend
+npm ci
+```
+
+Start the backend:
+
+```bash
 npm run dev
 ```
-## Limitations
 
-* Rule-based evaluation (limited depth)
-* Basic NLP for answer analysis
-* No voice/video interview support yet
+The backend runs on `http://localhost:5000`.
 
-## Future Scope
+### 3. Set Up the Frontend
 
-* Voice & video-based AI interviews
-* Advanced LLM-based evaluation
-* Company-specific preparation modules
-* Real-time AI coaching feedback
+Open another terminal:
+
+```bash
+cd frontend
+npm ci
+```
+
+Create a `.env` file inside the `frontend` folder:
+
+```env
+VITE_API_URL=http://localhost:5000
+```
+
+Start the frontend:
+
+```bash
+npm run dev
+```
+
+Open the local URL shown in the terminal. By default, Vite uses `http://localhost:5173`.
+
+## API Routes
+
+| Module | Endpoint |
+|---|---|
+| Authentication | `/api/auth` |
+| User | `/api/user` |
+| Roles | `/api/roles` |
+| Resume | `/api/resume` |
+| Resume Builder | `/api/resume-builder` |
+| Practice | `/api/practice` |
+| Progress | `/api/progress` |
+| Interview | `/api/interview` |
+
+## Future Improvements
+
+- Voice and video-based mock interviews.
+- More detailed interview evaluation.
+- Company-specific preparation.
+- Better performance analysis and feedback.
+
+## Author
+
+**Bhumika Mourya**
+
+Software Engineer | Full Stack Developer (MERN)
+
+[GitHub Profile](https://github.com/bhumikamourya)
